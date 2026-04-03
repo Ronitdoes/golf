@@ -14,7 +14,7 @@ interface User {
   [key: string]: unknown;
 }
 
-export default function AdminUsersPage({ users, totalCount }: { users: User[], totalCount: number }) {
+export default function AdminUsersPage({ users, totalCount, totalPages: _totalPages, currentPage: _currentPage }: { users: User[], totalCount: number, totalPages: number, currentPage: number }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (
