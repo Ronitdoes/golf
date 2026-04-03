@@ -3,7 +3,7 @@
 // Client hook for conceptually managing scores, tightly wrapped around optimistic interactions
 import { useState, useEffect, useCallback } from 'react';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
-import { getUserScores, addScore as addScoreAction, deleteScore as deleteScoreAction } from '@/app/actions/scores';
+import { getUserScores, addScore as addScoreAction, deleteScore as deleteScoreAction, updateScore as updateScoreAction } from '@/app/actions/scores';
 
 export interface Score {
   id: string;
@@ -87,5 +87,20 @@ export function useScores() {
     return { success: true };
   };
 
-  return { scores, isLoading, addScore, deleteScore, refresh: fetchScores };
+  const editScore = async (scoreId: string, score: number) => {
+    // Optimistic Update
+    setScores(prev => prev.map(s => s.id === scoreId ? { ...s, score } : s));
+    
+    const res = await updateScoreAction(scoreId, score);
+    
+    if (res?.error) {
+       await fetchScores();
+       return res;
+    }
+    
+    await fetchScores();
+    return { success: true };
+  };
+
+  return { scores, isLoading, addScore, deleteScore, editScore, refresh: fetchScores };
 }

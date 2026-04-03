@@ -113,3 +113,46 @@ export async function deleteScore(scoreId: string) {
     return { error: 'Data removal boundary fault.' };
   }
 }
+
+export async function updateScore(scoreId: string, score: number) {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return { error: 'Authentication sequence failed.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.subscription_status !== 'active') {
+       return { error: 'Subscriber integrity check failed. Account inactive.' };
+    }
+
+    // High-fidelity validation: 1-45 Stableford scale
+    if (!Number.isInteger(score) || score < 1 || score > 45) {
+      return { error: 'Score verification failure: Bound mismatch (1-45).' };
+    }
+
+    const { error: updateError } = await supabase
+      .from('scores')
+      .update({ score })
+      .match({ id: scoreId, user_id: user.id });
+
+    if (updateError) {
+       console.error('[UPDATE_SCORE_ERROR]', updateError.message);
+       return { error: updateError.message };
+    }
+
+    revalidatePath('/dashboard/scores');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (err: unknown) {
+    console.error('[UPDATE_SCORE_CRITICAL]', err);
+    return { error: 'Performance record update fault.' };
+  }
+}

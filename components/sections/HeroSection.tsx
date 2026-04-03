@@ -10,7 +10,7 @@ import { signOut } from '@/app/actions/auth';
 
 interface UserMeta { id?: string; email?: string }
 
-export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null, isAdmin?: boolean }) {
+export default function HeroSection({ user, isAdmin, isSubscriptionActive }: { user?: UserMeta | null, isAdmin?: boolean, isSubscriptionActive?: boolean }) {
   const words = "Subscribe. Play. Give.".split(" ");
   const shouldReduceMotion = useReducedMotion();
 
@@ -18,11 +18,23 @@ export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null,
     gsap.registerPlugin(ScrollToPlugin);
   }, []);
 
-  const scrollToSection = (id: string) => {
+  const scrollToSection = (id: string, withMessage?: boolean) => {
+    if (withMessage) {
+      // Small tactical notification logic
+      const msg = document.createElement('div');
+      msg.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-white text-neutral-950 font-black text-xs uppercase tracking-[0.2em] px-8 py-4 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500';
+      msg.textContent = 'Start your subscription to see the dashboard';
+      document.body.appendChild(msg);
+      setTimeout(() => {
+        msg.classList.add('animate-out', 'fade-out', 'slide-out-to-top-4');
+        setTimeout(() => msg.remove(), 500);
+      }, 3000);
+    }
+
     gsap.to(window, {
-      duration: 2.5,
+      duration: 1.5,
       scrollTo: { y: `#${id}`, autoKill: true },
-      ease: "power2.inOut"
+      ease: "power3.inOut"
     });
   };
 
@@ -36,15 +48,32 @@ export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null,
         className="absolute top-0 right-0 p-8 md:p-12 z-50 flex items-center gap-6 md:gap-10"
       >
         {user ? (
-          <div className="flex items-center gap-6 md:gap-10">
+          <div className="flex items-center gap-6 md:gap-8">
             {isAdmin && (
                <Link 
                   href="/admin" 
-                  className="text-white/50 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
+                  className="text-white/40 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
                >
                   Admin
                </Link>
             )}
+
+            {isSubscriptionActive || isAdmin ? (
+               <Link 
+                  href="/dashboard" 
+                  className="text-white/40 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
+               >
+                  Dashboard
+               </Link>
+            ) : (
+               <button 
+                  onClick={() => scrollToSection('membership', true)}
+                  className="text-white/40 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
+               >
+                  Dashboard
+               </button>
+            )}
+
             <form action={signOut}>
                <button 
                   type="submit"
@@ -55,10 +84,10 @@ export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null,
             </form>
           </div>
         ) : (
-          <>
+          <div className="flex items-center gap-6 md:gap-8">
             <Link 
               href="/login" 
-              className="text-white/50 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
+              className="text-white/40 hover:text-white font-black text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all"
             >
               Login
             </Link>
@@ -68,7 +97,7 @@ export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null,
             >
               Sign Up
             </Link>
-          </>
+          </div>
         )}
       </motion.nav>
 

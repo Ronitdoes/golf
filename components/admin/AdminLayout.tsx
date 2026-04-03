@@ -38,14 +38,10 @@ export default function AdminLayout({ children, adminName }: { children: React.R
       {/* Sidebar Navigation - Reduced width to w-72 */}
       <aside className="w-72 bg-white/[0.01] border-r border-white/5 flex flex-col fixed h-full z-30 backdrop-blur-3xl shadow-[20px_0_50px_-20px_rgba(0,0,0,0.5)] overflow-hidden">
         <div className="p-8 border-b border-white/5 relative group">
-          <Link href="/admin" className="flex items-center gap-4 transition-transform duration-500 group-hover:scale-[1.02]">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center font-black text-neutral-950 text-xl shadow-[0_10px_30px_-5px_rgba(34,197,94,0.5)] transition-transform group-hover:rotate-6 shrink-0">
-               D
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xl font-black text-white tracking-tighter leading-none truncate">DigitalHero</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30 mt-1 truncate">Foundry Panel</span>
-            </div>
+          <Link href="/admin" className="transition-all hover:translate-x-1 inline-block">
+            <span className="text-3xl font-black tracking-[-0.04em] text-white uppercase block leading-[0.9]">
+              Admin<br />Panel
+            </span>
           </Link>
         </div>
 
@@ -86,7 +82,7 @@ export default function AdminLayout({ children, adminName }: { children: React.R
         <div className="p-6 border-t border-white/5 backdrop-blur-xl bg-black/20 space-y-2">
            <Link href="/" className="flex items-center gap-3 px-5 py-3.5 text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-all bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.05]">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a2 2 0 002 2h3a2 2 0 002-2V14a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 002 2h3a2 2 0 002-2V10L12 3m0 0l-7 7" /></svg>
-              Exit Dashboard
+              Exit Admin Panel
            </Link>
            <button 
              onClick={handleLogout}
