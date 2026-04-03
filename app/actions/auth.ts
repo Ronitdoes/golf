@@ -88,8 +88,8 @@ export async function signUp(formData: FormData) {
 }
 
 export async function verifyEmailOTP(email: string, token: string) {
-  if (!email || !token || token.length !== 6) {
-    return { error: 'Invalid verification parameters' };
+  if (!email || !token || token.length < 6) {
+    return { error: 'Verification code must be at least 6 digits long' };
   }
 
   const supabase = createServerSupabaseClient();

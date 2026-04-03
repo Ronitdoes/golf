@@ -116,19 +116,19 @@ export default function AuthForm({
               className="flex flex-col gap-3"
             >
               <label htmlFor="token" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 ml-1 text-center">
-                 Verification Code (6 Digits)
+                 Verification Code
               </label>
               <input
                 id="token"
                 name="token"
                 type="text"
-                maxLength={6}
+                maxLength={8}
                 required
                 autoFocus
-                placeholder="0 0 0 0 0 0"
+                placeholder="0 0 0 0 0 0 0 0"
                 className="w-full text-center text-3xl font-black py-6 bg-white/[0.04] border border-green-500/20 rounded-3xl text-white tracking-[0.5em] focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all placeholder-white/5 uppercase"
               />
-              <p className="text-[10px] text-center text-white/30 font-medium tracking-tight">Enter the 6-digit code sent to your email.</p>
+              <p className="text-[10px] text-center text-white/30 font-medium tracking-tight">Enter the code sent to your email.</p>
             </motion.div>
           ) : (
             fields.map((field, idx) => (
