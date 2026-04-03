@@ -5,20 +5,32 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
+
+  // If Supabase returned an error in the URL (e.g. link expired)
+  if (error || errorDescription) {
+    const msg = encodeURIComponent(errorDescription || error || 'Authentication failed');
+    return NextResponse.redirect(`${origin}/login?error=${msg}`);
+  }
   
   // Also handle optional next parameter to redirect user to specific destination
   const next = searchParams.get('next') ?? '/dashboard';
   
   if (code) {
     const supabase = createServerSupabaseClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (!error) {
+    if (!exchangeError) {
       // Redirect to login with a success message for a better user experience
       return NextResponse.redirect(`${origin}/login?success=Account+confirmed!+Please+log+in+to+continue.`);
     }
+
+    // Redirect with the specific exchange error message
+    const msg = encodeURIComponent(exchangeError.message || 'Invalid or expired login link');
+    return NextResponse.redirect(`${origin}/login?error=${msg}`);
   }
 
-  // Return the user to an error page with instructions if no code or exchange fails
-  return NextResponse.redirect(`${origin}/login?error=Invalid+login+link`);
+  // Final fallback
+  return NextResponse.redirect(`${origin}/login?error=Authentication+request+missing+verification+code`);
 }
