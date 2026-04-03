@@ -22,6 +22,7 @@ export async function signUp(formData: FormData) {
       email,
       password,
       options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
         data: {
           full_name: fullName,
         },
@@ -80,7 +81,7 @@ export async function signUp(formData: FormData) {
     return { error: 'A critical authentication fault occurred.' };
   }
 
-  redirect('/login');
+  return { success: 'Registration successful! Please check your email inbox to confirm your account before logging in.' };
 }
 
 import { createClient } from '@supabase/supabase-js';
@@ -137,6 +138,13 @@ export async function signIn(formData: FormData) {
     if (error) {
       console.error('[AUTH_SIGNIN_ERROR]', { message: error.message, email });
       return { error: 'Invalid login credentials' };
+    }
+
+    // 2. High-Fidelity Verification Guard: Block access if email is not confirmed
+    if (authData.user && !authData.user.email_confirmed_at) {
+      // Force logout to clear any partial session state
+      await supabase.auth.signOut();
+      return { error: 'Security Protocol: Please verify your email address before accessing the platform.' };
     }
 
     // Role-based redirection logic fetch: Check database and environment secrets

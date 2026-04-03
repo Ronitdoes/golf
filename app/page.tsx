@@ -36,27 +36,27 @@ export default async function Home() {
       <main className="relative z-10 w-full flex flex-col items-center">
         
         {/* Section 1: Hero (0-20% scroll) */}
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-[100svh]">
           <HeroSection user={user} isAdmin={profile?.is_admin} />
         </div>
 
         {/* Section 2: How It Works (20-40% scroll) */}
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-[100svh]">
            <HowItWorks />
         </div>
 
         {/* Section 3: Charity Impact (40-60% scroll) */}
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-[100svh]">
            <CharityImpact featuredCharity={featuredCharity} totalImpact={totalImpact} />
         </div>
 
         {/* Section 4: Draw Mechanics (60-80% scroll) */}
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-[100svh]">
            <DrawMechanics />
         </div>
 
         {/* Section 5: CTA (80-100% scroll) */}
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-[100svh]">
            <SubscribeCTA user={user} />
         </div>
 

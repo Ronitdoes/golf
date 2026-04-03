@@ -23,17 +23,21 @@ interface AuthFormProps {
 export default function AuthForm({ title, fields, submitLabel, onSubmit, footer }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     const formData = new FormData(e.currentTarget);
     try {
       const res = await onSubmit(formData);
       if (res && res.error) {
         setErrorMsg(res.error);
+      } else if (res && (res as any).success) {
+        setSuccessMsg((res as any).success);
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -64,6 +68,17 @@ export default function AuthForm({ title, fields, submitLabel, onSubmit, footer 
           >
             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             {errorMsg}
+          </motion.div>
+        )}
+
+        {successMsg && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-6 p-4 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold flex items-center gap-3"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            {successMsg}
           </motion.div>
         )}
 

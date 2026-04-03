@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
@@ -37,9 +37,17 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Retrieve current user session securely
-  const { data: { user } } = await supabase.auth.getUser();
+  // Retrieve current user session securely - Improved error handling for stalled sessions
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
+
+  // Cleanup orphaned session cookies if they are invalid/deleted server-side
+  if (authError && authError.message.includes('Refresh Token Not Found')) {
+    // Clear known Supabase cookies to stop the refresh loop
+    const cookiePrefix = `sb-${supabaseUrl.split('.')[0].replace('https://', '')}-auth-token`;
+    supabaseResponse.cookies.delete(cookiePrefix);
+    return supabaseResponse;
+  }
 
   // Protect /dashboard and /admin routes
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
