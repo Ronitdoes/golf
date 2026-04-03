@@ -11,13 +11,16 @@ export async function getSubscriberStats() {
   
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('subscription_status, subscription_plan');
+    .select('subscription_status, subscription_plan, is_admin');
+
+  // Filter out admins so they don't skew the business analytics
+  const realProfiles = profiles?.filter(p => !p.is_admin) || [];
 
   const stats = {
-    total: profiles?.length || 0,
-    active: profiles?.filter(p => p.subscription_status === 'active').length || 0,
-    monthly: profiles?.filter(p => p.subscription_status === 'active' && p.subscription_plan === 'monthly').length || 0,
-    yearly: profiles?.filter(p => p.subscription_status === 'active' && p.subscription_plan === 'yearly').length || 0,
+    total: realProfiles.length,
+    active: realProfiles.filter(p => p.subscription_status === 'active').length,
+    monthly: realProfiles.filter(p => p.subscription_status === 'active' && p.subscription_plan === 'monthly').length,
+    yearly: realProfiles.filter(p => p.subscription_status === 'active' && p.subscription_plan === 'yearly').length,
   };
 
   // Estimated Monthly Recurring Revenue (MRR)
@@ -60,10 +63,10 @@ export async function getCharityStats() {
 
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('selected_charity_id, subscription_status, subscription_plan');
+    .select('selected_charity_id, subscription_status, subscription_plan, is_admin');
 
-  // Simple approximation of current monthly impact
-  const activeProfiles = profiles?.filter(p => p.subscription_status === 'active') || [];
+  // Exclude admin records from charitable impacts to maintain financial hygiene
+  const activeProfiles = profiles?.filter(p => p.subscription_status === 'active' && !p.is_admin) || [];
   
   const impactMap: Record<string, number> = {};
   activeProfiles.forEach(p => {
