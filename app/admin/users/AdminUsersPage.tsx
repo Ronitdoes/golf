@@ -14,7 +14,7 @@ interface User {
   [key: string]: unknown;
 }
 
-export default function AdminUsersPage({ users, totalCount, totalPages: _totalPages, currentPage: _currentPage }: { users: User[], totalCount: number, totalPages: number, currentPage: number }) {
+export default function AdminUsersPage({ users, totalCount, totalPages: _totalPages, currentPage: _currentPage, currentUserId }: { users: User[], totalCount: number, totalPages: number, currentPage: number, currentUserId?: string }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (
@@ -74,7 +74,7 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
       </div>
 
       {/* Main Registry Ledger */}
-      <UserTable users={users} />
+      <UserTable users={users} currentUserId={currentUserId} />
     
     </div>
   );

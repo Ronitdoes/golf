@@ -10,11 +10,12 @@ interface UserRow {
   email?: string;
   subscription_status?: string;
   subscription_plan?: string;
+  is_admin?: boolean;
   charities?: { name?: string } | null;
   scores?: unknown[];
 }
 
-export default function UserTable({ users }: { users: UserRow[] }) {
+export default function UserTable({ users, currentUserId }: { users: UserRow[], currentUserId?: string }) {
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
@@ -46,13 +47,15 @@ export default function UserTable({ users }: { users: UserRow[] }) {
               >
                 <td className="px-8 py-6">
                    <div className="flex flex-col">
-                      <span className="font-black text-white text-base tracking-tight leading-none mb-1 group-hover:text-green-400 transition-colors">{user.full_name}</span>
+                      <span className={`font-black text-base tracking-tight leading-none mb-1 transition-colors ${user.is_admin ? 'text-green-500' : 'text-white group-hover:text-green-400'}`}>
+                        {user.is_admin ? 'System Administrator' : (user.full_name || 'Anonymous Node')}
+                      </span>
                       <span className="text-[9px] font-black uppercase tracking-widest text-white/20">{user.email}</span>
                    </div>
                 </td>
                 <td className="px-6 py-6 font-black text-[9px] uppercase tracking-[0.2em]">
                    <span className={`inline-flex items-center px-3 py-1 rounded-lg border ${user.subscription_plan === 'yearly' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-white/[0.03] text-white/40 border-white/5'}`}>
-                      {user.subscription_plan || 'N/A'}
+                      {user.is_admin ? 'N/A' : (user.subscription_plan || 'N/A')}
                    </span>
                 </td>
                 <td className="px-6 py-6">
@@ -65,10 +68,23 @@ export default function UserTable({ users }: { users: UserRow[] }) {
                    </div>
                 </td>
                 <td className="px-6 py-6 text-center">
-                   <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border ${user.subscription_status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/30' : user.subscription_status === 'inactive' ? 'bg-white/[0.03] text-white/20 border-white/10' : user.subscription_status === 'lapsed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'}`}>
-                      {user.subscription_status === 'active' && <div className="w-1 h-1 bg-green-500 rounded-full shadow-[0_0_6px_#22C55E]" />}
-                      {user.subscription_status}
-                   </span>
+                   {user.is_admin ? (
+                      user.id === currentUserId ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border bg-green-500/20 text-green-500 border-green-500/40 shadow-[0_0_15px_-5px_#22C55E]">
+                          <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse shadow-[0_0_6px_#22C55E]" />
+                          Active Node
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border bg-white/[0.03] text-white/30 border-white/10">
+                          System Node
+                        </span>
+                      )
+                   ) : (
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border ${user.subscription_status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/30' : user.subscription_status === 'inactive' ? 'bg-white/[0.03] text-white/20 border-white/10' : user.subscription_status === 'lapsed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'}`}>
+                        {user.subscription_status === 'active' && <div className="w-1 h-1 bg-green-500 rounded-full shadow-[0_0_6px_#22C55E]" />}
+                        {user.subscription_status || 'Unregistered'}
+                      </span>
+                   )}
                 </td>
                 <td className="px-8 py-6 text-right">
                    <Link 
