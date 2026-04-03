@@ -16,16 +16,29 @@ interface AuthFormProps {
   title: string;
   fields: AuthField[];
   submitLabel: string;
-  onSubmit: (formData: FormData) => Promise<{ error?: string; success?: string } | void>;
+  onSubmit: (formData: FormData) => Promise<{ error?: string; success?: string; isVerifying?: boolean } | void>;
+  onVerify?: (code: string) => Promise<{ error?: string; success?: string } | void>;
   footer?: React.ReactNode;
   success?: string;
   error?: string;
+  isVerifying?: boolean;
 }
 
-export default function AuthForm({ title, fields, submitLabel, onSubmit, footer, success, error }: AuthFormProps) {
+export default function AuthForm({ 
+  title, 
+  fields, 
+  submitLabel, 
+  onSubmit, 
+  onVerify,
+  footer, 
+  success, 
+  error, 
+  isVerifying: initialIsVerifying = false 
+}: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(error || null);
   const [successMsg, setSuccessMsg] = useState<string | null>(success || null);
+  const [isVerifying, setIsVerifying] = useState(initialIsVerifying);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,11 +48,22 @@ export default function AuthForm({ title, fields, submitLabel, onSubmit, footer,
 
     const formData = new FormData(e.currentTarget);
     try {
-      const res = await onSubmit(formData);
-      if (res && res.error) {
-        setErrorMsg(res.error);
-      } else if (res && (res as any).success) {
-        setSuccessMsg((res as any).success);
+      if (isVerifying && onVerify) {
+        const code = formData.get('token') as string;
+        const res = await onVerify(code);
+        if (res && res.error) setErrorMsg(res.error);
+        else if (res && res.success) setSuccessMsg(res.success);
+      } else {
+        const res = await onSubmit(formData);
+        if (res && res.error) {
+          setErrorMsg(res.error);
+        } else if (res && res.success) {
+          setSuccessMsg(res.success);
+        }
+        
+        if (res && (res as any).isVerifying) {
+          setIsVerifying(true);
+        }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -85,29 +109,52 @@ export default function AuthForm({ title, fields, submitLabel, onSubmit, footer,
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map((field, idx) => (
+          {isVerifying ? (
             <motion.div 
-              key={field.name}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + idx * 0.05, duration: 0.5 }}
-              className="flex flex-col gap-1.5"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-3"
             >
-              <label htmlFor={field.name} className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 ml-1">
-                {field.label}
+              <label htmlFor="token" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 ml-1 text-center">
+                 Verification Code (6 Digits)
               </label>
-              <div className="relative">
-                <input
-                  id={field.name}
-                  name={field.name}
-                  type={field.type}
-                  required={field.required}
-                  placeholder={field.placeholder}
-                  className="w-full px-5 py-3.5 bg-white/[0.02] border border-white/5 rounded-2xl text-white text-sm font-medium placeholder-white/10 focus:outline-none focus:ring-2 focus:ring-green-500/10 focus:border-green-500/30 transition-all hover:bg-white/[0.04]"
-                />
-              </div>
+              <input
+                id="token"
+                name="token"
+                type="text"
+                maxLength={6}
+                required
+                autoFocus
+                placeholder="0 0 0 0 0 0"
+                className="w-full text-center text-3xl font-black py-6 bg-white/[0.04] border border-green-500/20 rounded-3xl text-white tracking-[0.5em] focus:outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all placeholder-white/5 uppercase"
+              />
+              <p className="text-[10px] text-center text-white/30 font-medium tracking-tight">Enter the 6-digit code sent to your email.</p>
             </motion.div>
-          ))}
+          ) : (
+            fields.map((field, idx) => (
+              <motion.div 
+                key={field.name}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + idx * 0.05, duration: 0.5 }}
+                className="flex flex-col gap-1.5"
+              >
+                <label htmlFor={field.name} className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 ml-1">
+                  {field.label}
+                </label>
+                <div className="relative">
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    type={field.type}
+                    required={field.required}
+                    placeholder={field.placeholder}
+                    className="w-full px-5 py-3.5 bg-white/[0.02] border border-white/5 rounded-2xl text-white text-sm font-medium placeholder-white/10 focus:outline-none focus:ring-2 focus:ring-green-500/10 focus:border-green-500/30 transition-all hover:bg-white/[0.04]"
+                  />
+                </div>
+              </motion.div>
+            ))
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -125,7 +172,7 @@ export default function AuthForm({ title, fields, submitLabel, onSubmit, footer,
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : null}
-              {submitLabel}
+              {isVerifying ? 'Confirm Code' : submitLabel}
             </button>
           </motion.div>
         </form>

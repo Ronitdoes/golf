@@ -81,7 +81,41 @@ export async function signUp(formData: FormData) {
     return { error: 'A critical authentication fault occurred.' };
   }
 
-  return { success: 'Registration successful! Please check your email inbox to confirm your account before logging in.' };
+  return { 
+    isVerifying: true,
+    success: 'Registration initiated! Please enter the 6-digit code sent to your email.' 
+  };
+}
+
+export async function verifyEmailOTP(email: string, token: string) {
+  if (!email || !token || token.length !== 6) {
+    return { error: 'Invalid verification parameters' };
+  }
+
+  const supabase = createServerSupabaseClient();
+
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'signup',
+    });
+
+    if (error) {
+      console.error('[AUTH_VERIFY_ERROR]', error.message);
+      return { error: error.message };
+    }
+
+    if (data.user) {
+       // Profile already created by trigger or UPSERT in signUp
+       return { success: 'Email confirmed! Redirecting to login...' };
+    }
+  } catch (err) {
+    console.error('[AUTH_VERIFY_CRITICAL]', err);
+    return { error: 'Internal verification fault' };
+  }
+
+  return { error: 'Verification failed' };
 }
 
 import { createClient } from '@supabase/supabase-js';

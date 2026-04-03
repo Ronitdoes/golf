@@ -2,7 +2,9 @@
 
 // Signup page wrapped in Shared AuthForm using Zod for client validation
 import AuthForm, { type AuthField } from '@/components/ui/AuthForm';
-import { signUp } from '@/app/actions/auth';
+import { signUp, verifyEmailOTP } from '@/app/actions/auth';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import Link from 'next/link';
 
@@ -15,8 +17,10 @@ const signupSchema = z.object({
   message: "Passwords don't match",
   path: ["confirm_password"],
 });
-
 export default function SignupPage() {
+  const router = useRouter();
+  const currentEmail = useRef<string>('');
+
   const fields: AuthField[] = [
     { name: 'full_name', label: 'Full Name', type: 'text', required: true },
     { name: 'email', label: 'Email Address', type: 'email', required: true },
@@ -33,8 +37,19 @@ export default function SignupPage() {
       return { error: result.error.issues[0].message };
     }
     
+    currentEmail.current = obj.email as string;
+    
     // Call server action
     return signUp(formData);
+  };
+
+  const handleVerify = async (code: string) => {
+    const res = await verifyEmailOTP(currentEmail.current, code);
+    if (res && res.success) {
+      // Redirect after a short delay for feedback
+      setTimeout(() => router.push('/login?success=Account+confirmed!+Please+log+in.'), 1500);
+    }
+    return res;
   };
 
   const footer = (
@@ -48,10 +63,11 @@ export default function SignupPage() {
 
   return (
     <AuthForm 
-      title="Create your account" 
+      title={currentEmail.current ? "Verify your email" : "Create your account"} 
       fields={fields} 
       submitLabel="Sign Up" 
       onSubmit={handleSubmit}
+      onVerify={handleVerify}
       footer={footer}
     />
   );
