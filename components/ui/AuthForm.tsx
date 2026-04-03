@@ -16,14 +16,16 @@ interface AuthFormProps {
   title: string;
   fields: AuthField[];
   submitLabel: string;
-  onSubmit: (formData: FormData) => Promise<{ error?: string } | void>;
+  onSubmit: (formData: FormData) => Promise<{ error?: string; success?: string } | void>;
   footer?: React.ReactNode;
+  success?: string;
+  error?: string;
 }
 
-export default function AuthForm({ title, fields, submitLabel, onSubmit, footer }: AuthFormProps) {
+export default function AuthForm({ title, fields, submitLabel, onSubmit, footer, success, error }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(error || null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(success || null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

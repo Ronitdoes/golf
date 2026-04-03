@@ -11,7 +11,14 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-export default function LoginPage() {
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const successParam = searchParams.get('success');
+  const errorParam = searchParams.get('error');
+
   const fields: AuthField[] = [
     { name: 'email', label: 'Email Address', type: 'email', required: true },
     { name: 'password', label: 'Password', type: 'password', required: true },
@@ -51,6 +58,16 @@ export default function LoginPage() {
       submitLabel="Log In" 
       onSubmit={handleSubmit}
       footer={footer}
+      success={successParam || undefined}
+      error={errorParam || undefined}
     />
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a]" />}>
+      <LoginContent />
+    </Suspense>
   );
 }

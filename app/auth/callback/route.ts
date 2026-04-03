@@ -14,7 +14,8 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // Redirect to login with a success message for a better user experience
+      return NextResponse.redirect(`${origin}/login?success=Account+confirmed!+Please+log+in+to+continue.`);
     }
   }
 
