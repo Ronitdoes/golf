@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from '@/app/actions/auth';
-import { useTransition, useEffect } from 'react';
+import { useTransition } from 'react';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
   // Handle specific events
   if (event === 'payment.captured' || event === 'order.paid') {
-    const orderId = payload.payment?.entity?.order_id || payload.order?.entity?.id;
+    const _orderId = payload.payment?.entity?.order_id || payload.order?.entity?.id;
     const notes = payload.payment?.entity?.notes || payload.order?.entity?.notes;
     
     if (notes && notes.userId) {

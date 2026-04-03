@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: { id: string } }) {
          drawResults={drawResults} 
       />
     );
-  } catch (e) {
+  } catch (_e) {
     return notFound();
   }
 }

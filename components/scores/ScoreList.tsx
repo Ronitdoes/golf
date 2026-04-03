@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface ScoreListProps {
   scores: Score[];
-  onDelete: (id: string) => Promise<any>;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export default function ScoreList({ scores, onDelete }: ScoreListProps) {

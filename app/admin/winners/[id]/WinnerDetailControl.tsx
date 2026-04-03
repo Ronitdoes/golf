@@ -4,9 +4,20 @@
 import { useState } from 'react';
 import { approveWinner, rejectWinner, markAsPaid } from '@/app/actions/admin/winners';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-export default function WinnerDetailControl({ result }: { result: any }) {
+interface WinnerResult {
+  id: string;
+  prize_amount: number | string;
+  payment_status: string;
+  proof_url?: string | null;
+  verified_at?: string;
+  profiles: { full_name?: string; email?: string };
+  draws: { month: string; drawn_numbers: number[] };
+}
+
+export default function WinnerDetailControl({ result }: { result: WinnerResult }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
@@ -68,7 +79,7 @@ export default function WinnerDetailControl({ result }: { result: any }) {
                {result.proof_url ? (
                   <div className="space-y-6">
                      <div className="bg-white/[0.01] border border-white/5 rounded-[3rem] overflow-hidden aspect-video relative group shadow-2xl backdrop-blur-3xl p-4">
-                        <img src={result.proof_url} alt="Proof of Match alignment" className="w-full h-full object-contain rounded-[2rem]" />
+                        <Image src={result.proof_url!} alt="Proof of Match alignment" fill className="object-contain rounded-[2rem]" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-10">
                              <a href={result.proof_url} target="_blank" className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl">Inspect Full Manifest</a>
                         </div>
@@ -121,7 +132,7 @@ export default function WinnerDetailControl({ result }: { result: any }) {
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
                         </div>
                         <h4 className="text-3xl font-black text-white tracking-tight">Disbursement Verified</h4>
-                        <p className="text-white/30 font-bold max-w-xs mx-auto">Allocated funds were officially processed and cleared on {new Date(result.verified_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+                        <p className="text-white/30 font-bold max-w-xs mx-auto">Allocated funds were officially processed and cleared on {new Date(result.verified_at ?? Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
                      </div>
                   ) : (
                      <div className="space-y-10 relative z-10">

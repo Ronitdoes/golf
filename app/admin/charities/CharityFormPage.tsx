@@ -7,12 +7,30 @@ import ImageUpload from '@/components/admin/ImageUpload';
 import { createCharity, updateCharity, addCharityEvent, deleteCharityEvent } from '@/app/actions/admin/charities';
 import Link from 'next/link';
 
+interface CharityData {
+  id: string;
+  name: string;
+  description?: string;
+  website_url?: string;
+  image_url?: string;
+  is_featured?: boolean;
+  is_active?: boolean;
+}
+
+interface CharityEvent {
+  id: string;
+  title: string;
+  description?: string;
+  event_date: string;
+  location?: string;
+}
+
 export default function CharityFormPage({ 
   charity, 
   events = [] 
 }: { 
-  charity?: any, 
-  events?: any[] 
+  charity?: CharityData, 
+  events?: CharityEvent[] 
 }) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);

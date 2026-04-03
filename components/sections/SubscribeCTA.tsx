@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import Link from 'next/link';
 import RazorpayCheckout from '@/components/payments/RazorpayCheckout';
+import { User } from '@supabase/supabase-js';
 
 const features = [
   'Monthly prize draw entry',
@@ -30,7 +31,7 @@ const plans = [
   },
 ];
 
-export default function SubscribeCTA({ user }: { user?: any }) {
+export default function SubscribeCTA({ user }: { user?: User | null }) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -98,7 +99,7 @@ export default function SubscribeCTA({ user }: { user?: any }) {
 
               {user ? (
                 <RazorpayCheckout 
-                  plan={plan.name.toLowerCase() as any} 
+                  plan={plan.name === 'Standard' ? 'monthly' : 'yearly'} 
                   user={user}
                   buttonText={`Subscribe ${plan.name} Now`}
                   className={`w-full py-5 md:py-6 rounded-2xl font-black text-base md:text-lg tracking-tight transition-all duration-300 hover:scale-[1.05] active:scale-95 flex items-center justify-center gap-3 mt-auto ${

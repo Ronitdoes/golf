@@ -43,7 +43,7 @@ export async function createDraw(monthDate: Date, logicType: 'random' | 'algorit
     
     revalidatePath('/admin/draws');
     return { success: true, draw: data };
-  } catch (err: any) {
+  } catch (err) {
     console.error('[CREATE_DRAW_CRITICAL]', err);
     return { error: 'Structural generation fault during draw setup.' };
   }
@@ -65,7 +65,7 @@ export async function getDraws() {
       throw new Error(error.message);
     }
     return data || [];
-  } catch (err: any) {
+  } catch (err) {
     console.error('[GET_DRAWS_CRITICAL]', err);
     return [];
   }
@@ -94,7 +94,7 @@ export async function getDrawById(id: string) {
       .eq('draw_id', id);
 
     return { draw, results: results || [] };
-  } catch (err: any) {
+  } catch (err) {
     console.error('[GET_DRAW_BY_ID_CRITICAL]', err);
     return { error: 'Boundary lookup failure.' };
   }

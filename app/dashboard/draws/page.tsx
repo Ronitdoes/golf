@@ -1,6 +1,13 @@
 // Dashboard view tracking upcoming draws actively simulating timers and exposing historical participation records securely
 import { createServerSupabaseClient } from '@/lib/supabase';
 
+interface DrawRecord {
+  draw_id: string;
+  match_count: number;
+  prize_amount: number | string;
+  draws: { draw_month: string; winning_numbers?: number[] }[];
+}
+
 export default async function DrawsDashboardPage() {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,12 +70,13 @@ export default async function DrawsDashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <h4 className="text-white font-medium text-lg mb-1">No Historical Draws</h4>
-              <p className="text-neutral-500">You haven't explicitly participated in any processed draws globally yet.</p>
+              <p className="text-neutral-500">You haven&apos;t explicitly participated in any processed draws globally yet.</p>
            </div>
         ) : (
            <div className="flex flex-col gap-4">
-              {participations?.map((record: any, idx: number) => {
-                 const monthStr = new Date(record.draws.draw_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+              {participations?.map((record: DrawRecord, idx: number) => {
+                 const draw = record.draws[0];
+                 const monthStr = draw ? new Date(draw.draw_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) : 'Unknown';
                  
                  return (
                    <div key={`${record.draw_id}-${idx}`} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors hover:border-neutral-700">
@@ -85,7 +93,7 @@ export default async function DrawsDashboardPage() {
                         {/* Numbers mapping representation securely visually interpreted linearly */}
                         <div className="flex flex-wrap gap-2">
                            <span className="text-xs text-neutral-500 mt-1 mr-1">Global Draw:</span>
-                           {record.draws.winning_numbers?.map((num: number, i: number) => (
+                           {draw?.winning_numbers?.map((num: number, i: number) => (
                               <div key={i} className="w-6 h-6 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center text-xs text-white font-medium">
                                 {num}
                               </div>
@@ -110,3 +118,4 @@ export default async function DrawsDashboardPage() {
     </div>
   );
 }
+

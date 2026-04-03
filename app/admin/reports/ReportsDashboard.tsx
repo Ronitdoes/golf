@@ -3,7 +3,6 @@
 // Administrative high-fidelity visualization center for platform performance using Green brand theme
 import { 
   BarChart, Bar, 
-  LineChart, Line, 
   PieChart, Pie, 
   XAxis, YAxis, 
   CartesianGrid, Tooltip, 
@@ -14,16 +13,24 @@ import { motion } from 'framer-motion';
 
 const COLORS = ['#10B981', '#34D399', '#059669', '#047857', '#064E3B', '#10B981'];
 
+interface SubscriberStats { active: number }
+interface PrizeHistoryEntry { month: string; amount: number }
+interface PrizeStats { totalPaid: number; history: PrizeHistoryEntry[] }
+interface CharityBreakdownEntry { name: string; value: number }
+interface CharityStats { totalImpact: number; breakdown: CharityBreakdownEntry[] }
+interface DrawFrequencyEntry { number: number; count: number }
+interface DrawStats { drawsRun: number; frequencyChart: DrawFrequencyEntry[] }
+
 export default function ReportsDashboard({ 
   subscriberStats, 
   prizeStats, 
   charityStats, 
   drawStats 
 }: { 
-  subscriberStats: any, 
-  prizeStats: any, 
-  charityStats: any, 
-  drawStats: any 
+  subscriberStats: SubscriberStats, 
+  prizeStats: PrizeStats, 
+  charityStats: CharityStats, 
+  drawStats: DrawStats 
 }) {
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -115,7 +122,7 @@ export default function ReportsDashboard({
                       paddingAngle={8}
                       dataKey="value"
                     >
-                      {charityStats.breakdown.map((entry: any, index: number) => (
+                      {charityStats.breakdown.map((entry: CharityBreakdownEntry, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -128,7 +135,7 @@ export default function ReportsDashboard({
             </div>
             
             <div className="mt-4 grid grid-cols-2 gap-6 w-full relative z-10">
-               {charityStats.breakdown.slice(0, 4).map((entry: any, index: number) => (
+               {charityStats.breakdown.slice(0, 4).map((entry: CharityBreakdownEntry, index: number) => (
                   <div key={index} className="flex items-center gap-3">
                      <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.3)]" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                      <span className="text-[10px] text-white/30 font-black uppercase tracking-widest truncate">{entry.name}</span>

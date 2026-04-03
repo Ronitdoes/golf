@@ -18,7 +18,7 @@ export async function signUp(formData: FormData) {
 
   try {
     // 1. Attempt standard registration
-    let { data, error } = await supabase.auth.signUp({
+    const signupRes = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -28,31 +28,34 @@ export async function signUp(formData: FormData) {
       },
     });
 
+    let data = signupRes.data;
+    const signupError = signupRes.error;
+
     // 2. High-Fidelity Administrative Fallback: Bypass rate limits in development/testing
-    if (error && (error.message.includes('rate limit') || error.status === 429)) {
-       console.log('[AUTH_SIGNUP_BYPASS] Rate limit hit. Provisioning via Service Role...');
-       
-       const supabaseAdmin = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-       );
+    if (signupError && (signupError.message.includes('rate limit') || signupError.status === 429)) {
+      console.log('[AUTH_SIGNUP_BYPASS] Rate limit hit. Provisioning via Service Role...');
 
-       const { data: adminData, error: adminError } = await supabaseAdmin.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: { full_name: fullName }
-       });
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
 
-       if (adminError) {
-          console.error('[AUTH_SIGNUP_BYPASS_ERROR]', adminError);
-          return { error: 'Security boundary prevents further registrations.' };
-       }
-       
-       data = { user: adminData.user, session: null };
-    } else if (error) {
-       console.error('[AUTH_SIGNUP_ERROR]', { message: error.message, email });
-       return { error: error.message };
+      const { data: adminData, error: adminError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName }
+      });
+
+      if (adminError) {
+        console.error('[AUTH_SIGNUP_BYPASS_ERROR]', adminError);
+        return { error: 'Security boundary prevents further registrations.' };
+      }
+
+      data = { user: adminData.user, session: null };
+    } else if (signupError) {
+      console.error('[AUTH_SIGNUP_ERROR]', { message: signupError.message, email });
+      return { error: signupError.message };
     }
 
     if (data.user) {
@@ -72,7 +75,7 @@ export async function signUp(formData: FormData) {
         console.error('[WELCOME_EMAIL_FAILURE]', { email, error: emailError });
       }
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error('[AUTH_SIGNUP_CRITICAL]', err);
     return { error: 'A critical authentication fault occurred.' };
   }
@@ -95,35 +98,35 @@ export async function signIn(formData: FormData) {
   try {
     // 1. Ensure administrator account exists if environment secrets are matched
     if (isEnvAdminMatch) {
-       // Using Service Role Client to manage users (Server Side Only)
-       const supabaseAdmin = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-       );
+      // Using Service Role Client to manage users (Server Side Only)
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
 
-       const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-       const existingAdmin = users?.users.find(u => u.email === email);
+      const { data: users, error: _listError } = await supabaseAdmin.auth.admin.listUsers();
+      const existingAdmin = users?.users.find(u => u.email === email);
 
-       if (!existingAdmin) {
-          // Provision the master administrator at the service level with auto-confirmation
-          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-             email,
-             password,
-             email_confirm: true,
-             user_metadata: { full_name: 'System Administrator' }
+      if (!existingAdmin) {
+        // Provision the master administrator at the service level with auto-confirmation
+        const { data: newUser, error: _createError } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: { full_name: 'System Administrator' }
+        });
+
+        if (!_createError && newUser.user) {
+          // Hard-link physical administrative status to the created profile inherently
+          await supabaseAdmin.from('profiles').upsert({
+            id: newUser.user.id,
+            email: newUser.user.email,
+            full_name: 'System Administrator',
+            is_admin: true,
+            subscription_status: 'active'
           });
-
-          if (!createError && newUser.user) {
-             // Hard-link physical administrative status to the created profile inherently
-             await supabaseAdmin.from('profiles').upsert({
-                id: newUser.user.id,
-                email: newUser.user.email,
-                full_name: 'System Administrator',
-                is_admin: true,
-                subscription_status: 'active'
-             });
-          }
-       }
+        }
+      }
     }
 
     const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -150,7 +153,7 @@ export async function signIn(formData: FormData) {
         isAdmin = true;
       }
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error('[AUTH_SIGNIN_CRITICAL]', err);
     return { error: 'Internal security boundary fault.' };
   }

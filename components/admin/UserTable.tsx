@@ -4,7 +4,17 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-export default function UserTable({ users }: { users: any[] }) {
+interface UserRow {
+  id: string;
+  full_name?: string;
+  email?: string;
+  subscription_status?: string;
+  subscription_plan?: string;
+  charities?: { name?: string } | null;
+  scores?: unknown[];
+}
+
+export default function UserTable({ users }: { users: UserRow[] }) {
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}

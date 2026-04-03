@@ -64,7 +64,7 @@ export default function DrawMechanics() {
           <div className="p-8 md:p-12 space-y-8">
             <h3 className="text-white font-bold text-xl md:text-2xl tracking-tight">Prize Pool Distribution</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-white/5">
-              {prizes.map((prize, i) => (
+              {prizes.map((prize, _i) => (
                 <div key={prize.match} className="p-6 space-y-2">
                   <div className="text-4xl font-black text-green-500">{prize.percentage}</div>
                   <div className="text-white font-bold tracking-tight">{prize.match}</div>

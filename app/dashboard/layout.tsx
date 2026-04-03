@@ -3,6 +3,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { signOut } from '@/app/actions/auth';
 
 const NAV_ITEMS = [
@@ -59,7 +60,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="mt-auto border-t border-neutral-800 pt-6 px-2 flex items-center justify-between">
            <div className="flex items-center gap-3">
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
+                <Image src={profile.avatar_url} alt="Avatar" width={36} height={36} className="w-9 h-9 rounded-full object-cover" />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white font-bold">{initialLet}</div>
               )}

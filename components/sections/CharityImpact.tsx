@@ -34,7 +34,7 @@ export default function CharityImpact({ featuredCharity, totalImpact }: CharityI
         setCount(totalImpact);
         return;
       }
-      let start = 0;
+      const _start = 0;
       const end = totalImpact;
       const duration = 2000; // 2 seconds
       const startTime = performance.now();

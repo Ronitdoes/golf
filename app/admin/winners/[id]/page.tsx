@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return (
       <WinnerDetailControl result={result} />
     );
-  } catch (e) {
+  } catch (_e) {
     return notFound();
   }
 }

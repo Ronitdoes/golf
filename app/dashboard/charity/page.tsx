@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
-import Image from 'next/link'; // using basic img safely below
+import Image from 'next/image';
 import CharitySelector from '@/components/charities/CharitySelector';
 
 export default async function CharityDashboardPage() {
@@ -61,7 +61,7 @@ export default async function CharityDashboardPage() {
              <>
                <div className="h-40 bg-neutral-800 relative">
                  {charity.image_url ? (
-                   <img src={charity.image_url} alt={charity.name} className="w-full h-full object-cover opacity-80" />
+                   <Image src={charity.image_url} alt={charity.name} fill className="object-cover opacity-80" />
                  ) : (
                    <div className="w-full h-full bg-gradient-to-tr from-green-900/50 to-neutral-800" />
                  )}

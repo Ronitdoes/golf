@@ -5,11 +5,18 @@ import { useState } from 'react';
 import DrawPreview from './DrawPreview';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 
+interface SimulationData {
+  drawnNumbers: number[];
+  winners: { match5: number; match4: number; match3: number };
+  pool: { totalPrizePool: number; charityTotal: number };
+  jackpotRollover: number;
+}
+
 export default function DrawControl({ drawId }: { drawId: string }) {
   const [logicType, setLogicType] = useState<'random' | 'algorithmic'>('random');
   const [isSimulating, setIsSimulating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [simulationData, setSimulationData] = useState<any>(null);
+  const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -34,8 +41,8 @@ export default function DrawControl({ drawId }: { drawId: string }) {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setSimulationData(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
     } finally {
       setIsSimulating(false);
     }
@@ -61,8 +68,8 @@ export default function DrawControl({ drawId }: { drawId: string }) {
       
       // Successfully published
       window.location.reload(); 
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
       setShowConfirm(false);
     } finally {
       setIsPublishing(false);

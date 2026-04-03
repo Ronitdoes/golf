@@ -5,7 +5,19 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function WinnersRegistryPage({ winners }: { winners: any[] }) {
+interface WinnerProfile { full_name?: string; email?: string }
+interface WinnerDraw { month?: string }
+interface Winner {
+  id: string;
+  match_count: number;
+  prize_amount: number | string;
+  payment_status: string;
+  proof_url?: string | null;
+  profiles?: WinnerProfile | null;
+  draws?: WinnerDraw | null;
+}
+
+export default function WinnersRegistryPage({ winners }: { winners: Winner[] }) {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'paid'>('all');
 
   const filteredWinners = winners.filter(w => {
@@ -30,7 +42,7 @@ export default function WinnersRegistryPage({ winners }: { winners: any[] }) {
            {['all', 'pending', 'paid'].map((tab) => (
               <button 
                  key={tab}
-                 onClick={() => setActiveTab(tab as any)}
+                 onClick={() => setActiveTab(tab as 'all' | 'pending' | 'paid')}
                  className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-green-500 text-neutral-950 shadow-lg shadow-green-500/20' : 'text-white/30 hover:text-white hover:bg-white/[0.05]'}`}
               >
                  {tab}

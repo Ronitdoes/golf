@@ -6,19 +6,43 @@ import { updateUserSubscriptionStatus, deleteUserScore } from '@/app/actions/adm
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
+type SubscriptionStatus = 'active' | 'inactive' | 'lapsed' | 'cancelled';
+
+interface UserProfile {
+  id: string;
+  full_name?: string;
+  email?: string;
+  created_at?: string;
+  subscription_status?: SubscriptionStatus;
+  charities?: { name?: string } | null;
+}
+
+interface Score {
+  id: string;
+  score: number;
+  played_at: string;
+}
+
+interface DrawResult {
+  id: string;
+  match_count: number;
+  prize_amount: number | string;
+  draws: { month: string };
+}
+
 export default function AdminUserDetailPage({ 
   user, 
   scores, 
   drawResults 
 }: { 
-  user: any, 
-  scores: any[], 
-  drawResults: any[] 
+  user: UserProfile, 
+  scores: Score[], 
+  drawResults: DrawResult[] 
 }) {
   const [status, setStatus] = useState(user.subscription_status);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleStatusChange = async (newStatus: any) => {
+  const handleStatusChange = async (newStatus: SubscriptionStatus) => {
     setIsUpdating(true);
     const res = await updateUserSubscriptionStatus(user.id, newStatus);
     if (!res?.error) setStatus(newStatus);
@@ -45,7 +69,7 @@ export default function AdminUserDetailPage({
               <p className="text-white/30 font-bold text-xl flex flex-wrap items-center gap-x-6 gap-y-2">
                  <span className="text-white/60 tracking-tight">{user.email}</span>
                  <span className="hidden md:inline opacity-20">•</span>
-                 <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/5 px-4 py-1.5 rounded-full border border-white/10">Joined {new Date(user.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                 <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/5 px-4 py-1.5 rounded-full border border-white/10">Joined {new Date(user.created_at ?? Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </p>
            </div>
         </div>
@@ -62,7 +86,7 @@ export default function AdminUserDetailPage({
                 <select 
                    value={status} 
                    disabled={isUpdating}
-                   onChange={(e) => handleStatusChange(e.target.value)}
+                   onChange={(e) => handleStatusChange(e.target.value as SubscriptionStatus)}
                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-8 text-white font-black text-sm focus:outline-none focus:border-green-500 transition-all appearance-none cursor-pointer group-hover:bg-black/60 shadow-inner"
                 >
                    <option value="active" className="bg-neutral-900">ACTIVE STATUS</option>
@@ -167,7 +191,7 @@ export default function AdminUserDetailPage({
                   <p className="text-xs text-white/20 font-black uppercase tracking-widest italic leading-relaxed">No verified outcomes recorded in current cycle history.</p>
                ) : (
                   <div className="space-y-6">
-                     {drawResults.map((dr, idx) => (
+                     {drawResults.map((dr, _idx) => (
                         <div key={dr.id} className="flex items-center justify-between border-b border-white/5 pb-6 last:border-0 last:pb-0 group">
                            <div className="space-y-1.5">
                               <span className="text-sm font-black text-white group-hover:text-green-400 transition-colors uppercase leading-none">{new Date(dr.draws.month + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>

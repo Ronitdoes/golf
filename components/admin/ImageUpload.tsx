@@ -3,6 +3,7 @@
 // Administrative visual file-mapping component for charity assets
 import { useState, useRef } from 'react';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import Image from 'next/image';
 
 export default function ImageUpload({ 
   onUpload, 
@@ -59,7 +60,7 @@ export default function ImageUpload({
       >
         {preview ? (
           <>
-            <img src={preview} alt="Profile Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+            <Image src={preview} alt="Profile Preview" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
             <div className="absolute inset-0 bg-neutral-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
                <span className="text-white font-black text-sm tracking-widest uppercase">Replace Image</span>
             </div>

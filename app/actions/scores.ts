@@ -19,7 +19,7 @@ export async function getUserScores(userId: string) {
       throw new Error(error.message);
     }
     return scores || [];
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[GET_SCORES_CRITICAL]', err);
     return [];
   }
@@ -79,7 +79,7 @@ export async function addScore(score: number, playedAt: Date) {
     revalidatePath('/dashboard/scores');
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[ADD_SCORE_CRITICAL]', err);
     return { error: 'A critical data ingestion fault occurred.' };
   }
@@ -108,7 +108,7 @@ export async function deleteScore(scoreId: string) {
     revalidatePath('/dashboard/scores');
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DELETE_SCORE_CRITICAL]', err);
     return { error: 'Data removal boundary fault.' };
   }

@@ -1,7 +1,6 @@
 'use client';
 
 // Administrative high-fidelity metric tile with Green brand theme and interactive hover states
-import { motion } from 'framer-motion';
 
 export default function StatsCard({ 
   label, 

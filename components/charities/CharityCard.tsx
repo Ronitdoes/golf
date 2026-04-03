@@ -2,7 +2,7 @@
 
 // Modular rendering component encapsulating structural visual states dynamically routing users based on explicit authentication contexts
 import Link from 'next/link';
-import { useState } from 'react';
+import Image from 'next/image';
 
 interface CharityCardProps {
   charity: {
@@ -32,10 +32,11 @@ export default function CharityCard({ charity, onSelect, isLoggedIn, isSelecting
 
       <Link href={`/charities/${charity.id}`} className="block h-48 bg-neutral-800 relative overflow-hidden shrink-0">
          {charity.image_url ? (
-           <img 
-             src={charity.image_url} 
-             alt={charity.name} 
-             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
+           <Image
+             src={charity.image_url}
+             alt={charity.name}
+             fill
+             className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
            />
          ) : (
            <div className="w-full h-full bg-gradient-to-tr from-green-900/40 to-neutral-800" />

@@ -2,7 +2,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase';
 import StatCard from '@/components/dashboard/StatCard';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default async function DashboardOverview() {
   const supabase = createServerSupabaseClient();

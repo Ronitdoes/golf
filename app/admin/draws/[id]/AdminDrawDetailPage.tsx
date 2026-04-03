@@ -1,17 +1,26 @@
 'use client';
 
 // Page for specific draw management session (Simulation/Publishing) with amber admin theme
-import { useState } from 'react';
+
 import DrawControl from '@/components/admin/DrawControl';
 import DrawPreview from '@/components/admin/DrawPreview';
 import Link from 'next/link';
+
+interface Draw {
+  id: string;
+  month: string;
+  status: 'draft' | 'published';
+  drawn_numbers: number[] | null;
+  total_prize_pool: number | null;
+  jackpot_rollover_amount: number | null;
+}
 
 export default function AdminDrawDetailPage({ 
   draw, 
   eligibleCount,
   rollover 
 }: { 
-  draw: any, 
+  draw: Draw, 
   eligibleCount: number,
   rollover: number 
 }) {

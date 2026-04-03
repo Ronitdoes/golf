@@ -5,13 +5,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import { selectCharity } from '@/app/actions/charities';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+
+interface CharityOption {
+  id: string;
+  name: string;
+  description: string;
+  image_url?: string | null;
+  is_featured?: boolean;
+}
 
 export default function CharitySelector({ 
   triggerLabel = 'Change Charity', 
   triggerClass = 'px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors border border-neutral-700 shadow-sm'
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [charities, setCharities] = useState<any[]>([]);
+  const [charities, setCharities] = useState<CharityOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSelecting, setIsSelecting] = useState<string | null>(null);
@@ -101,7 +110,7 @@ export default function CharitySelector({
                         {filteredCharities.map((charity) => (
                            <div key={charity.id} className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden hover:border-green-500/50 transition-colors flex flex-col">
                               {charity.image_url && (
-                                <img src={charity.image_url} alt={charity.name} className="w-full h-24 object-cover opacity-80" />
+                                <div className="relative w-full h-24"><Image src={charity.image_url!} alt={charity.name} fill className="object-cover opacity-80" /></div>
                               )}
                               <div className="p-4 flex flex-col flex-1">
                                  <div className="flex items-start justify-between gap-2 mb-2">

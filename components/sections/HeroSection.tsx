@@ -8,7 +8,9 @@ import gsap from 'gsap';
 import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 import { signOut } from '@/app/actions/auth';
 
-export default function HeroSection({ user, isAdmin }: { user?: any, isAdmin?: boolean }) {
+interface UserMeta { id?: string; email?: string }
+
+export default function HeroSection({ user, isAdmin }: { user?: UserMeta | null, isAdmin?: boolean }) {
   const words = "Subscribe. Play. Give.".split(" ");
   const shouldReduceMotion = useReducedMotion();
 

@@ -5,8 +5,16 @@ import { useState } from 'react';
 import UserTable from '@/components/admin/UserTable';
 import { motion } from 'framer-motion';
 
-export default function AdminUsersPage({ users: initialUsers, totalCount }: { users: any[], totalCount: number }) {
-  const [users, setUsers] = useState(initialUsers);
+interface User {
+  id: string;
+  full_name?: string;
+  email?: string;
+  subscription_status?: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+export default function AdminUsersPage({ users, totalCount }: { users: User[], totalCount: number }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (

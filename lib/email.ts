@@ -16,7 +16,7 @@ export async function sendEmail({
 }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'DigitalHero <onboarding@resend.dev>', // High-fidelity bypass: Use 'onboarding@resend.dev' for sandbox testing
+      from: 'DigitalHero <onboarding@resend.dev>',
       to,
       subject,
       html,
@@ -27,7 +27,6 @@ export async function sendEmail({
       return { success: false, error };
     }
 
-    console.log('[RESEND_API_SUCCESS]', { data, to, subject });
     return { success: true, data };
   } catch (err) {
     console.error('Email exception:', err);

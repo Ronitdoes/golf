@@ -43,7 +43,7 @@ export default function WinningsDashboardPage() {
         .order('created_at', { ascending: false });
 
       if (data) {
-         setRecords(data as any[]);
+         setRecords(data as unknown as WinningsRecord[]);
          const sum = data.reduce((acc, curr) => acc + Number(curr.prize_amount), 0);
          setTotalWinnings(sum);
       }

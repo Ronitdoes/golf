@@ -3,10 +3,21 @@
 // Administrative command center for managing verified donor organizations registry
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { deleteCharity } from '@/app/actions/admin/charities';
 import { motion } from 'framer-motion';
 
-export default function AdminCharitiesPage({ charities }: { charities: any[] }) {
+interface Charity {
+  id: string;
+  name: string;
+  website_url: string;
+  image_url?: string | null;
+  is_featured: boolean;
+  is_active: boolean;
+  subscriberCount?: number;
+}
+
+export default function AdminCharitiesPage({ charities }: { charities: Charity[] }) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -79,7 +90,7 @@ export default function AdminCharitiesPage({ charities }: { charities: any[] }) 
                     <div className="flex items-center gap-6">
                        <div className="w-14 h-14 rounded-2xl bg-neutral-950 border border-white/5 p-1 flex items-center justify-center overflow-hidden shrink-0 group-hover:border-green-500/20 transition-colors shadow-lg">
                           {charity.image_url ? (
-                             <img src={charity.image_url} alt={charity.name} className="w-full h-full object-cover rounded-xl" />
+                             <Image src={charity.image_url!} alt={charity.name} width={56} height={56} className="w-full h-full object-cover rounded-xl" />
                           ) : (
                              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                           )}

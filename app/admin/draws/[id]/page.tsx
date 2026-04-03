@@ -5,8 +5,12 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import AdminDrawDetailPage from './AdminDrawDetailPage';
 import { notFound } from 'next/navigation';
 
+interface ProfileWithScores {
+  id: string;
+  scores: { id: string }[];
+}
+
 export default async function Page({ params }: { params: { id: string } }) {
-  console.log('[DEBUG_DRAW_LOOKUP]', { id: params.id });
   const result = await getDrawById(params.id);
   
   if (result.error) {
@@ -28,10 +32,11 @@ export default async function Page({ params }: { params: { id: string } }) {
   const { data: eligibleUsers } = await supabase
     .from('profiles')
     .select('id, scores!inner(id)')
-    .eq('subscription_status', 'active');
+    .eq('subscription_status', 'active')
+    .returns<ProfileWithScores[]>();
     
-  // Sub-filter accurately - profiles with exactly 5 scores (manual check due to lack of count-aware RLS join logic in simple single-query SSR)
-  const count = eligibleUsers?.filter((u: any) => u.scores.length === 5).length || 0;
+  // Filter to profiles with exactly 5 scores (Supabase join doesn't support count-filtering natively)
+  const count = eligibleUsers?.filter((u) => u.scores.length === 5).length || 0;
   
   const rollover = await getPreviousJackpot();
 

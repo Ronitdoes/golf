@@ -2,7 +2,6 @@
 // Client-side dashboard component for platform metrics
 
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 import Link from 'next/link';
 
 interface Stat {

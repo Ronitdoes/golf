@@ -34,7 +34,7 @@ export async function createRazorpayOrder(plan: 'monthly' | 'yearly') {
   }
 }
 
-export async function verifyRazorpayPayment(response: any) {
+export async function verifyRazorpayPayment(_response: unknown) {
   // Client-side verification is handled by signature validation
   // We will mostly rely on Webhooks for updating the status 
   // but we can do a quick check here if needed.

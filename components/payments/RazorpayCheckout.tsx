@@ -3,6 +3,32 @@
 import { useState } from 'react';
 import { createRazorpayOrder } from '@/app/actions/razorpay';
 import { useRouter } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: string | number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill: { name: string; email: string };
+  theme: { color: string };
+  handler: (response: RazorpayResponse) => void;
+  modal: { ondismiss: () => void };
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
 
 export default function RazorpayCheckout({ 
   plan, 
@@ -11,7 +37,7 @@ export default function RazorpayCheckout({
   className
 }: { 
   plan: 'monthly' | 'yearly', 
-  user: any,
+  user: User | null,
   buttonText: string,
   className?: string
 }) {
@@ -31,13 +57,13 @@ export default function RazorpayCheckout({
         description: `${plan === 'monthly' ? 'Monthly' : 'Yearly'} Membership`,
         order_id: order.id,
         prefill: {
-          name: user.user_metadata?.full_name || '',
-          email: user.email || '',
+          name: user?.user_metadata?.full_name || '',
+          email: user?.email || '',
         },
         theme: {
           color: '#22c55e',
         },
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           // Send to verification route if needed, but we rely on Webhooks for reliability
           console.log('[RAZORPAY_PAYMENT_SUCCESS]', response);
           router.push('/dashboard?payment=success');
@@ -49,11 +75,12 @@ export default function RazorpayCheckout({
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[RAZORPAY_CHECKOUT_ERROR]', error);
-      alert(`Payment Initiation Error: ${error.message || 'Internal security boundary fault'}`);
+      const msg = error instanceof Error ? error.message : 'Internal security boundary fault';
+      alert(`Payment Initiation Error: ${msg}`);
     } finally {
       setIsLoading(false);
     }

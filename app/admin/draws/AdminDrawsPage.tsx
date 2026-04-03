@@ -31,8 +31,8 @@ export default function AdminDrawsPage({
       if (res?.draw) {
         router.push(`/admin/draws/${res.draw.id}`);
       }
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unexpected error occurred.');
     } finally {
       setIsCreating(false);
     }
