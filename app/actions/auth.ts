@@ -18,19 +18,18 @@ export async function signUp(formData: FormData) {
 
   try {
     // 1. Attempt standard registration
-    const signupRes = await supabase.auth.signUp({
+    const { data: initialData, error: initialError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
         data: {
           full_name: fullName,
         },
       },
     });
 
-    let data = signupRes.data;
-    const signupError = signupRes.error;
+    let data = initialData;
+    let signupError = initialError;
 
     // 2. High-Fidelity Administrative Fallback: Bypass rate limits in development/testing
     if (signupError && (signupError.message.includes('rate limit') || signupError.status === 429)) {
