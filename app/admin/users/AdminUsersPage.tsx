@@ -18,29 +18,29 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-10">
       
       {/* Header and Operational Dashboard Control */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10 border-b border-white/5 pb-16"
+        className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10 border-b border-white/5 pb-10"
       >
-        <div className="space-y-4">
+        <div className="space-y-2">
            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-green-500/60 ml-1">User Base Control</span>
-           <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-black text-white tracking-tighter leading-none">Global Registry</h1>
-           <p className="text-white/30 font-bold max-w-2xl text-lg leading-relaxed">
+           <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-black text-white tracking-tighter leading-none">Global Registry</h1>
+           <p className="text-white/30 font-bold max-w-2xl text-base leading-relaxed">
               Monitoring verified user alignments, subscription health, and participation deltas across the global network architecture.
            </p>
         </div>
         
-        <div className="flex bg-white/[0.03] border border-white/5 p-2 rounded-3xl backdrop-blur-3xl shadow-xl">
+        <div className="flex bg-white/[0.03] border border-white/5 p-1.5 rounded-[1.5rem] backdrop-blur-3xl shadow-xl">
            {['all', 'active', 'inactive', 'lapsed'].map((filter) => (
              <button
                key={filter}
                onClick={() => setActiveFilter(filter)}
-               className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === filter ? 'bg-green-500 text-neutral-950 shadow-lg shadow-green-500/20' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.05]'}`}
+               className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === filter ? 'bg-green-500 text-neutral-950 shadow-lg shadow-green-500/20' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.05]'}`}
              >
                {filter}
              </button>
@@ -49,7 +49,7 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
       </motion.div>
 
       {/* Statistics and Filtering Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-2">
          {[
            { label: 'Total Registry', value: totalCount, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
            { label: 'Verified Nodes', value: users.filter(u => u.subscription_status === 'active').length, icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
@@ -60,14 +60,14 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
              initial={{ opacity: 0, y: 10 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.4 + i * 0.1 }}
-             className="bg-white/[0.01] border border-white/5 p-8 rounded-[2rem] flex items-center gap-6 group hover:bg-white/[0.03] transition-all backdrop-blur-xl"
+             className="bg-white/[0.01] border border-white/5 p-6 rounded-[2rem] flex items-center gap-5 group hover:bg-white/[0.03] transition-all backdrop-blur-xl"
            >
-             <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-neutral-950 transition-all shadow-[0_10px_20px_-5px_rgba(34,197,94,0.1)]">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={stat.icon} /></svg>
+             <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-neutral-950 transition-all shadow-[0_10px_20px_-5px_rgba(34,197,94,0.1)]">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={stat.icon} /></svg>
              </div>
              <div>
-                <div className="text-3xl font-black text-white tracking-tighter leading-none">{stat.value}</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">{stat.label}</div>
+                <div className="text-2xl font-black text-white tracking-tighter leading-none">{stat.value}</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-white/20 mt-1">{stat.label}</div>
              </div>
            </motion.div>
          ))}

@@ -50,15 +50,15 @@ async function createAdmin() {
   // 2. Set the role to 'admin' in profiles
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ role: 'admin' })
+    .update({ is_admin: true })
     .match({ email })
 
   if (profileError) {
-    console.error('Error updating profile role:', profileError.message)
+    console.error('Error elevating profile to admin:', profileError.message)
     // If profile doesn't exist, try creating it (though usually handled by trigger)
     const { error: insertError } = await supabase
       .from('profiles')
-      .upsert({ id: userId || 'some-id', email, role: 'admin' })
+      .upsert({ id: userId || 'some-id', email, is_admin: true })
     
     if (insertError) console.error('Upsert failed:', insertError.message)
   }
