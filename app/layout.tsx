@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Golf Charity Subscription Platform',
   description: 'Enter your scores, support charities, and win monthly prizes.',
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({
