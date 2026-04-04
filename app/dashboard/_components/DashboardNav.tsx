@@ -30,15 +30,12 @@ export function DashboardNav({ items, variant }: NavProps) {
               href={item.href} 
               className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all group relative overflow-hidden ${
                 isActive 
-                  ? 'text-white bg-green-500/[0.03] border-green-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' 
+                  ? 'text-white bg-green-500/[0.03] border-transparent shadow-[0_0_30px_rgba(16,185,129,0.05)]' 
                   : 'text-neutral-500 hover:text-white hover:bg-white/[0.03] border-transparent hover:border-white/5'
               }`}
             >
               {isActive && (
-                <>
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.8)]" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none" />
-                </>
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none" />
               )}
               <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 shrink-0 transition-colors ${isActive ? 'text-green-500' : 'group-hover:text-green-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
