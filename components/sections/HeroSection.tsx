@@ -32,7 +32,7 @@ export default function HeroSection({ user, isAdmin, isSubscriptionActive }: { u
     }
 
     gsap.to(window, {
-      duration: 1.5,
+      duration: 2.5,
       scrollTo: { y: `#${id}`, autoKill: true },
       ease: "power3.inOut"
     });
