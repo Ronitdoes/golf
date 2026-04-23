@@ -3,7 +3,12 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import StatCard from '@/components/dashboard/StatCard';
 import Link from 'next/link';
 
-export default async function DashboardOverview() {
+export default async function DashboardOverview({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { payment } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -21,10 +26,24 @@ export default async function DashboardOverview() {
   ]);
 
   const totalWinnings = winnings?.reduce((acc, curr) => acc + Number(curr.prize_amount), 0) || 0;
-  const isInactive = profile?.subscription_status !== 'active';
+  const isInactive = profile?.subscription_status !== 'active' && process.env.CASHFREE_ENVIRONMENT !== 'SANDBOX';
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out">
+      
+      {payment === 'success' && (
+        <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-4 duration-500">
+          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-white font-black uppercase text-xs tracking-widest">Protocol Synchronized</h3>
+            <p className="text-white/40 text-sm font-bold">Your subscription has been successfully verified. Welcome to the elite tier.</p>
+          </div>
+        </div>
+      )}
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
         <div className="space-y-4">
@@ -32,7 +51,7 @@ export default async function DashboardOverview() {
               <span className="text-[10px] font-black text-green-500 uppercase tracking-[0.4em] mb-1">Operational Status</span>
               <div className="flex items-center gap-4">
                 <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-black text-white tracking-tighter leading-[0.9]">Platform<br/>Overview</h1>
-                {profile?.subscription_status === 'active' && (
+                {(profile?.subscription_status === 'active' || process.env.CASHFREE_ENVIRONMENT === 'SANDBOX') && (
                   <div className="px-4 py-1.5 bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-[0_0_15px_rgba(34,197,94,0.1)]">Pro Node</div>
                 )}
               </div>
