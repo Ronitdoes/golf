@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import Link from 'next/link';
-import RazorpayCheckout from '@/components/payments/RazorpayCheckout';
+import CashfreeCheckout from '@/components/payments/CashfreeCheckout';
 import { User } from '@supabase/supabase-js';
 
 const features = [
@@ -98,7 +98,7 @@ export default function SubscribeCTA({ user }: { user?: User | null }) {
               </div>
 
               {user ? (
-                <RazorpayCheckout 
+                <CashfreeCheckout 
                   plan={plan.name === 'Standard' ? 'monthly' : 'yearly'} 
                   user={user}
                   buttonText={`Subscribe ${plan.name} Now`}

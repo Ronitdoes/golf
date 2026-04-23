@@ -1,7 +1,7 @@
 // Server component for displaying unified subscription mechanics with Razorpay integration
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
-import RazorpayCheckout from '@/components/payments/RazorpayCheckout';
+import CashfreeCheckout from '@/components/payments/CashfreeCheckout';
 
 export default async function SubscribePage() {
   const supabase = createServerSupabaseClient();
@@ -74,7 +74,7 @@ export default async function SubscribePage() {
               </li>
             </ul>
 
-            <RazorpayCheckout 
+            <CashfreeCheckout 
                plan="monthly" 
                user={user}
                buttonText="Subscribe Monthly"
@@ -121,7 +121,7 @@ export default async function SubscribePage() {
               </li>
             </ul>
 
-            <RazorpayCheckout 
+            <CashfreeCheckout 
                plan="yearly" 
                user={user}
                buttonText="Subscribe Yearly"
