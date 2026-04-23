@@ -1,14 +1,10 @@
 // Homepage with interactive 3D scene and scrollable sections
-
 import HeroSection from '@/components/sections/HeroSection';
 import HowItWorks from '@/components/sections/HowItWorks';
-import CharityImpact from '@/components/sections/CharityImpact';
+import CharityImpactSection from '@/components/sections/CharityImpactSection';
 import DrawMechanics from '@/components/sections/DrawMechanics';
 import SubscribeCTA from '@/components/sections/SubscribeCTA';
-import { getCharities } from '@/app/actions/charities';
-import { getCharityStats } from '@/lib/analytics';
 import { createServerSupabaseClient } from '@/lib/supabase';
-
 import SceneClient from '@/components/canvas/SceneClient';
 
 export default async function Home() {
@@ -22,10 +18,6 @@ export default async function Home() {
     .single() : { data: null };
 
   const isSubscriptionActive = profile?.subscription_status === 'active';
-
-  const featuredCharities = await getCharities(true);
-  const featuredCharity = featuredCharities && featuredCharities.length > 0 ? featuredCharities[0] : undefined;
-  const { totalImpact } = await getCharityStats();
 
   return (
     <div className="relative min-h-[500vh] bg-[#070707]">
@@ -45,13 +37,13 @@ export default async function Home() {
         </div>
 
         {/* Section 2: How It Works (20-40% scroll) */}
-        <div className="w-full min-h-[100svh]">
+        <div id="how-it-works" className="w-full min-h-[100svh]">
            <HowItWorks />
         </div>
 
         {/* Section 3: Charity Impact (40-60% scroll) */}
         <div className="w-full min-h-[100svh]">
-           <CharityImpact featuredCharity={featuredCharity} totalImpact={totalImpact} />
+           <CharityImpactSection />
         </div>
 
         {/* Section 4: Draw Mechanics (60-80% scroll) */}

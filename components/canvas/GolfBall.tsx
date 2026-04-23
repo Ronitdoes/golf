@@ -44,7 +44,7 @@ export function GolfBall({ isMobile }: { isMobile: boolean }) {
     >
       <mesh ref={meshRef} castShadow receiveShadow>
         {/* Higher segments on desktop for maximum visual fidelity */}
-        <sphereGeometry args={[1, isMobile ? 64 : 128, isMobile ? 64 : 128]} />
+        <sphereGeometry args={[1, isMobile ? 32 : 64, isMobile ? 32 : 64]} />
         <MeshDistortMaterial 
           map={texture}
           bumpMap={texture}
