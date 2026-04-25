@@ -35,7 +35,7 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
            </p>
         </div>
         
-        <div className="flex bg-white/[0.03] border border-white/5 p-1.5 rounded-[1.5rem] backdrop-blur-3xl shadow-xl">
+        <div className="flex overflow-x-auto custom-scrollbar bg-white/[0.03] border border-white/5 p-1.5 rounded-[1.5rem] backdrop-blur-3xl shadow-xl max-w-full">
            {['all', 'active', 'inactive', 'lapsed'].map((filter) => (
              <button
                key={filter}

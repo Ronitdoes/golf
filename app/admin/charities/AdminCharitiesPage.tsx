@@ -128,7 +128,7 @@ export default function AdminCharitiesPage({ charities }: { charities: Charity[]
                     )}
                   </td>
                   <td className="px-10 py-8 text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
+                    <div className="flex items-center justify-end gap-3 opacity-100 translate-x-0 lg:opacity-0 lg:translate-x-4 lg:group-hover:opacity-100 lg:group-hover:translate-x-0 transition-all duration-500">
                        <Link 
                           href={`/admin/charities/${charity.id}/edit`}
                           className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.05] rounded-xl border border-transparent hover:border-white/10 transition-all"

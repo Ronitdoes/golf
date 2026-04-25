@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from '@/app/actions/auth';
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
@@ -20,6 +20,7 @@ export default function AdminLayout({ children, adminName }: { children: React.R
   const pathname = usePathname();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -35,8 +36,13 @@ export default function AdminLayout({ children, adminName }: { children: React.R
       <div className="fixed top-[-10%] left-[-5%] w-[35%] h-[35%] bg-green-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
       <div className="fixed bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-green-500/5 rounded-full blur-[100px] pointer-events-none z-0" />
 
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+
       {/* Sidebar Navigation - Reduced width to w-72 */}
-      <aside className="w-72 bg-white/[0.01] border-r border-white/5 flex flex-col fixed h-full z-30 backdrop-blur-3xl shadow-[20px_0_50px_-20px_rgba(0,0,0,0.5)] overflow-hidden">
+      <aside className={`w-72 bg-white/[0.01] border-r border-white/5 flex flex-col fixed h-full z-40 backdrop-blur-3xl shadow-[20px_0_50px_-20px_rgba(0,0,0,0.5)] overflow-hidden transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-8 border-b border-white/5 relative group">
           <Link href="/admin" className="transition-all hover:translate-x-1 inline-block">
             <span className="text-3xl font-black tracking-[-0.04em] text-white uppercase block leading-[0.9]">
@@ -59,6 +65,7 @@ export default function AdminLayout({ children, adminName }: { children: React.R
               >
                 <Link 
                   href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-[0.2em] group relative overflow-hidden ${isActive ? 'text-neutral-950' : 'text-white/40 hover:text-white'}`}
                 >
                   {isActive && (
@@ -96,26 +103,31 @@ export default function AdminLayout({ children, adminName }: { children: React.R
       </aside>
 
       {/* Main Content Area - Increased margin slightly and adjusted padding */}
-      <main className="flex-1 ml-72 flex flex-col min-h-screen relative z-10 overflow-x-hidden w-full">
-        <header className="h-20 bg-white/[0.01] backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-20 shadow-sm shadow-black/50">
-           <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.3em]">
-              <span className="text-white/30 hidden sm:inline">Administrative Interface</span>
-              <div className="w-1 h-1 rounded-full bg-green-500" />
-              <span className="text-white">{pathname.split('/')[2] || 'Operations Panel'}</span>
+      <main className="flex-1 ml-0 md:ml-72 flex flex-col min-h-screen relative z-10 overflow-x-hidden w-full">
+        <header className="h-20 bg-white/[0.01] backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20 shadow-sm shadow-black/50">
+           <div className="flex items-center gap-3 sm:gap-4 font-black uppercase">
+              <button 
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 -ml-2 text-white/50 hover:text-white"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+              </button>
+              <span className="text-[9px] tracking-[0.3em] text-white/30 hidden sm:inline">Administrative Interface</span>
+              <div className="w-1 h-1 rounded-full bg-green-500 hidden sm:block" />
+              <span className="text-sm sm:text-base tracking-[0.2em] text-white">{pathname.split('/')[2] || 'Operations Panel'}</span>
            </div>
 
-           <div className="flex items-center gap-4">
-              <div className="flex flex-col items-end">
-                 <span className="text-xs font-black text-white tracking-tight">{adminName}</span>
-                 <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-                    <span className="text-[8px] text-green-500/60 font-black uppercase tracking-[0.2em]">Verified Access</span>
-                 </div>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10 flex items-center justify-center font-black text-white text-base shadow-xl shrink-0">
-                 {adminName[0]}
-              </div>
-           </div>
+            <div className="flex items-center gap-4">
+               <div className="flex flex-col items-end">
+                  <span className="text-[10px] sm:text-xs font-black text-white tracking-tight truncate max-w-[120px] sm:max-w-none text-right">{adminName}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5 justify-end">
+                     <div className="w-1 h-1 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+                     <span className="text-[8px] text-green-500/60 font-black uppercase tracking-[0.2em]">Verified Access</span>
+                  </div>
+               </div>
+            </div>
         </header>
 
         <div className="flex-1 p-8 sm:p-10 w-full max-w-[1600px] mx-auto overflow-x-hidden">

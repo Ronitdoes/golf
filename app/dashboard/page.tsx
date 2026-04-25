@@ -34,7 +34,8 @@ export default async function DashboardOverview({
   ]);
 
   const totalWinnings = winnings?.reduce((acc, curr) => acc + Number(curr.prize_amount), 0) || 0;
-  const isInactive = profile?.subscription_status !== 'active' && process.env.CASHFREE_ENVIRONMENT !== 'SANDBOX';
+  const isSandbox = process.env.CASHFREE_ENVIRONMENT === 'SANDBOX';
+  const isInactive = profile?.subscription_status !== 'active' && !isSandbox;
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out">
@@ -59,7 +60,7 @@ export default async function DashboardOverview({
               <span className="text-[10px] font-black text-green-500 uppercase tracking-[0.4em] mb-1">Operational Status</span>
               <div className="flex items-center gap-4">
                 <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-black text-white tracking-tighter leading-[0.9]">Platform<br/>Overview</h1>
-                {(profile?.subscription_status === 'active' || process.env.CASHFREE_ENVIRONMENT === 'SANDBOX') && (
+                {(profile?.subscription_status === 'active' || isSandbox) && (
                   <div className="px-4 py-1.5 bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-[0_0_15px_rgba(34,197,94,0.1)]">Pro Node</div>
                 )}
               </div>
