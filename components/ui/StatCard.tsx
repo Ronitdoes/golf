@@ -1,24 +1,29 @@
 'use client';
 
-// Administrative high-fidelity metric tile with Green brand theme and interactive hover states
+// Unified high-fidelity metric tile component
+import React from 'react';
 
-export default function StatsCard({ 
-  label, 
+export interface StatCardProps {
+  title: string;
+  value: string | number;
+  desc?: string;
+  icon?: React.ReactNode;
+  trend?: string;
+  trendDirection?: 'up' | 'down';
+}
+
+export default function StatCard({ 
+  title, 
   value, 
+  desc,
   icon, 
   trend, 
   trendDirection = 'up' 
-}: { 
-  label: string, 
-  value: string | number, 
-  icon: React.ReactNode, 
-  trend?: string, 
-  trendDirection?: 'up' | 'down' 
-}) {
+}: StatCardProps) {
   return (
-    <div className="bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-10 hover:border-green-500/20 transition-all duration-500 group relative overflow-hidden backdrop-blur-3xl shadow-2xl">
+    <div className="bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-8 md:p-10 hover:border-green-500/20 transition-all duration-500 group relative overflow-hidden backdrop-blur-3xl shadow-2xl flex flex-col justify-between h-full">
       <div className="flex items-center justify-between mb-8 relative z-10">
-         <div className="w-14 h-14 bg-white/[0.02] border border-white/10 rounded-2xl flex items-center justify-center text-white/20 group-hover:text-green-500 group-hover:bg-green-500/10 group-hover:border-green-500/20 transition-all duration-500 shadow-xl group-hover:scale-110 group-hover:rotate-3">
+         <div className="w-14 h-14 bg-white/[0.02] border border-white/10 rounded-2xl flex items-center justify-center text-white/20 group-hover:text-green-500 group-hover:bg-green-500/10 group-hover:border-green-500/20 transition-all duration-500 shadow-xl group-hover:scale-110 group-hover:rotate-3 shrink-0">
             {icon}
          </div>
          {trend && (
@@ -28,8 +33,9 @@ export default function StatsCard({
          )}
       </div>
       <div className="relative z-10">
-         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 block mb-2">{label}</span>
+         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 block mb-2">{title}</span>
          <span className="text-4xl font-black text-white tracking-tighter leading-none group-hover:text-green-400 transition-colors duration-500">{value}</span>
+         {desc && <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-2">{desc}</p>}
       </div>
       
       {/* Dynamic Background Glow on Hover */}

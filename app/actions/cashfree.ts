@@ -1,14 +1,17 @@
 'use server';
 
 import { cashfree } from '@/lib/cashfree';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireUser } from '@/lib/auth-utils';
 import { headers } from 'next/headers';
 
 export async function createCashfreeOrder(plan: 'monthly' | 'yearly') {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) throw new Error('Authentication required');
+  let user;
+  try {
+    const auth = await requireUser();
+    user = auth.user;
+  } catch (e: any) {
+    throw new Error('Authentication required');
+  }
 
   const baseAmountEur = plan === 'monthly' ? 10 : 96; 
   const exchangeRate = 89.30; // Approx exchange rate 1 EUR = 89.30 INR

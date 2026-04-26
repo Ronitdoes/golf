@@ -2,6 +2,7 @@
 
 // Server actions for managing draw records and triggering the draw-runner logic
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -10,7 +11,13 @@ import { revalidatePath } from 'next/cache';
  */
 export async function createDraw(monthDate: Date, logicType: 'random' | 'algorithmic') {
   try {
-    const supabase = await createServerSupabaseClient();
+    let supabase;
+    try {
+      const auth = await requireAdmin();
+      supabase = auth.supabase;
+    } catch (e: any) {
+      return { error: e.message };
+    }
     
     // Normalize date to the first of the month
     const normalizedMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString().split('T')[0];

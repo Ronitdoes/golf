@@ -2,11 +2,12 @@
 
 // Server actions for managing scores in the Golf Charity Platform securely
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireActiveSubscription, requireUser } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
 
 export async function getUserScores(userId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const { supabase } = await requireUser();
     const { data: scores, error } = await supabase
       .from('scores')
       .select('*')
@@ -27,22 +28,13 @@ export async function getUserScores(userId: string) {
 
 export async function addScore(score: number, playedAt: Date) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return { error: 'Not authenticated.' };
-    }
-
-    // Verify strongly that the subscription is entirely active
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.subscription_status !== 'active') {
-      return { error: 'You must have an active subscription to playfully enter scores.' };
+    let supabase, user;
+    try {
+      const auth = await requireActiveSubscription();
+      supabase = auth.supabase;
+      user = auth.user;
+    } catch (e: any) {
+      return { error: e.message };
     }
 
     // Defensive Server-Side logic handling edge cases natively
@@ -87,11 +79,13 @@ export async function addScore(score: number, playedAt: Date) {
 
 export async function deleteScore(scoreId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return { error: 'Not authenticated.' };
+    let supabase, user;
+    try {
+      const auth = await requireUser();
+      supabase = auth.supabase;
+      user = auth.user;
+    } catch (e: any) {
+      return { error: e.message };
     }
 
     const { error } = await supabase
@@ -116,21 +110,13 @@ export async function deleteScore(scoreId: string) {
 
 export async function updateScore(scoreId: string, score: number) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return { error: 'Authentication sequence failed.' };
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.subscription_status !== 'active') {
-       return { error: 'Subscriber integrity check failed. Account inactive.' };
+    let supabase, user;
+    try {
+      const auth = await requireActiveSubscription();
+      supabase = auth.supabase;
+      user = auth.user;
+    } catch (e: any) {
+      return { error: e.message };
     }
 
     // High-fidelity validation: 1-45 Stableford scale

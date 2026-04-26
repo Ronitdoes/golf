@@ -1,6 +1,6 @@
 // Main dashboard overview utilizing SSR concurrent queries efficiently displaying global summary statistics
-import { createServerSupabaseClient } from '@/lib/supabase';
-import StatCard from '@/components/dashboard/StatCard';
+import { requireUser } from '@/lib/auth-utils';
+import StatCard from '@/components/ui/StatCard';
 import Link from 'next/link';
 
 export default async function DashboardOverview({
@@ -9,8 +9,7 @@ export default async function DashboardOverview({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { payment } = await searchParams;
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await requireUser();
 
   // Persist sandbox success state to database natively to ensure persistent access
   if (payment === 'success' && process.env.CASHFREE_ENVIRONMENT === 'SANDBOX') {

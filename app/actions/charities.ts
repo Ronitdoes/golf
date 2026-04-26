@@ -2,6 +2,7 @@
 
 // Server actions handling global charity querying and authenticating explicit contribution parameter adjustments
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireUser } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
 
 export async function getCharities(featuredOnly = false) {
@@ -41,11 +42,13 @@ export async function getCharityById(id: string) {
 }
 
 export async function selectCharity(charityId: string) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
-  if (authError || !user) {
-     return { error: 'Not authenticated natively.' };
+  let user, supabase;
+  try {
+    const auth = await requireUser();
+    supabase = auth.supabase;
+    user = auth.user;
+  } catch (e: any) {
+    return { error: 'Not authenticated natively.' };
   }
 
   const { error } = await supabase

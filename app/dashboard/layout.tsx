@@ -1,6 +1,6 @@
 // Dashboard layout handling Sidebar (desktop) and Bottom Tabs (mobile), while enforcing strict Auth/Subscription access explicitly natively
 
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireUser } from '@/lib/auth-utils';
 import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -21,10 +21,14 @@ const NAV_ITEMS = [
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) redirect('/login');
+  let supabase, user;
+  try {
+    const auth = await requireUser();
+    supabase = auth.supabase;
+    user = auth.user;
+  } catch (e) {
+    return redirect('/login');
+  }
 
   const { data: profile } = await supabase
     .from('profiles')

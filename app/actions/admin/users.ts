@@ -2,13 +2,14 @@
 
 // Administrative server actions for managing users and subscriptions
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
 
 /**
  * Fetches all users with pagination and optional filtering.
  */
 export async function getAllUsers(page: number = 1, filters?: { query?: string, status?: string, plan?: string }) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   const limit = 20;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -51,7 +52,7 @@ export async function getAllUsers(page: number = 1, filters?: { query?: string, 
  * Returns a specific user with their score and draw history.
  */
 export async function getUserById(id: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   
   const [profileRes, scoresRes, resultsRes] = await Promise.all([
     supabase.from('profiles').select('*, charities(name)').eq('id', id).single(),
@@ -72,7 +73,7 @@ export async function getUserById(id: string) {
  * Manually updates a user's subscription status.
  */
 export async function updateUserSubscriptionStatus(userId: string, status: 'active' | 'inactive' | 'lapsed' | 'cancelled') {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase
     .from('profiles')
     .update({ subscription_status: status })
@@ -88,7 +89,7 @@ export async function updateUserSubscriptionStatus(userId: string, status: 'acti
  * Admin deletion of an individual score.
  */
 export async function deleteUserScore(scoreId: string, userId: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase
     .from('scores')
     .delete()

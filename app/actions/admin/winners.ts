@@ -2,13 +2,14 @@
 
 // Administrative server actions for verifying draw results and managing the payout lifecycle
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
 
 /**
  * Fetches all winners based on status filters.
  */
 export async function getWinnersByStatus(status?: 'pending' | 'paid') {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   
   let query = supabase
     .from('draw_results')
@@ -33,7 +34,7 @@ export async function getWinnersByStatus(status?: 'pending' | 'paid') {
  * Fetches specific draw result with all verified context.
  */
 export async function getWinnerResultById(id: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from('draw_results')
     .select(`
@@ -55,7 +56,7 @@ import { sendWinnerRejectedEmail } from '@/emails/winner-rejected';
  * Approves a winner's proof and marks for pending payout.
  */
 export async function approveWinner(id: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   
   // Need to fetch winner details first for email
   const winner = await getWinnerResultById(id);
@@ -82,7 +83,7 @@ export async function approveWinner(id: string) {
  * Rejects a winner's proof.
  */
 export async function rejectWinner(id: string, reason: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
 
   // Need to fetch winner details first for email
   const winner = await getWinnerResultById(id);
@@ -108,7 +109,7 @@ export async function rejectWinner(id: string, reason: string) {
  * Marks a prize as officially disbursed.
  */
 export async function markAsPaid(id: string) {
-  const supabase = await createServerSupabaseClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase
     .from('draw_results')
     .update({ 
