@@ -49,26 +49,16 @@ export function generateAlgorithmicDraw(allUserScores: number[]): number[] {
     let selectedNum = -1;
 
     for (let i = 1; i <= 45; i++) {
-      // Must explicitly ignore numbers already inherently drawn natively skipping thresholds
       if (drawn.has(i)) continue;
 
       const w = weights.get(i)!;
       randomThreshold -= w;
 
-      if (randomThreshold <= 0) {
-        selectedNum = i;
-        break;
-      }
-    }
+      // Track every valid candidate so the last one serves as float-precision fallback,
+      // preventing systematic bias toward the lowest available number.
+      selectedNum = i;
 
-    // In isolated float-point bounds failing sequentially reliably drop onto final available key
-    if (selectedNum === -1) {
-       for (let i = 1; i <= 45; i++) {
-          if (!drawn.has(i)) {
-             selectedNum = i;
-             break;
-          }
-       }
+      if (randomThreshold <= 0) break;
     }
 
     drawn.add(selectedNum);
