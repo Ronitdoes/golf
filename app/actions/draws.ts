@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache';
  * Creates a new draft draw record for a specific month.
  * Ensures only one draw exists per month.
  */
-export async function createDraw(monthDate: Date, logicType: 'random' | 'algorithmic') {
+export async function createDraw(year: number, month: number, logicType: 'random' | 'algorithmic') {
   try {
     let supabase;
     try {
@@ -19,8 +19,8 @@ export async function createDraw(monthDate: Date, logicType: 'random' | 'algorit
       return { error: e.message };
     }
     
-    // Normalize date to the first of the month
-    const normalizedMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).toISOString().split('T')[0];
+    // Build month string directly from local year/month — no Date timezone shifting
+    const normalizedMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
     // Check if draw already exists for this month
     const { data: existing } = await supabase

@@ -36,7 +36,7 @@ export default function AdminUsersPage({ users, totalCount, totalPages: _totalPa
         </div>
         
         <div className="flex overflow-x-auto custom-scrollbar bg-white/[0.03] border border-white/5 p-1.5 rounded-[1.5rem] backdrop-blur-3xl shadow-xl max-w-full">
-           {['all', 'active', 'inactive', 'lapsed'].map((filter) => (
+           {['all', 'active', 'inactive'].map((filter) => (
              <button
                key={filter}
                onClick={() => setActiveFilter(filter)}

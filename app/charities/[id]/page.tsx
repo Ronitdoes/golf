@@ -26,9 +26,9 @@ export async function generateStaticParams() {
 
 export const revalidate = 3600; // Auto revalidation logically caching globally
 
-export default async function CharityProfilePage({ params }: { params: { id: string } }) {
+export default async function CharityProfilePage({ params }: { params: Promise<{ id: string }> }) {
   // Extract strictly mapped ID efficiently preventing fault
-  const { id } = params;
+  const { id } = await params;
   
   const { charity, events } = await getCharityById(id);
 

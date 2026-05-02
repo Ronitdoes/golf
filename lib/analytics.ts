@@ -3,6 +3,8 @@
 // Aggregation logic for administrative data visualization and platform performance monitoring
 import { createServerSupabaseClient } from '@/lib/supabase';
 
+import { calculateMonthlyPrizePool } from '@/lib/prize-pool';
+
 /**
  * Aggregates subscriber counts and revenue estimates.
  */
@@ -27,7 +29,9 @@ export async function getSubscriberStats() {
   // Monthly price: £10, Yearly: £96 (£8.00/mo)
   const mrr = (stats.monthly * 10) + (stats.yearly * (96 / 12));
 
-  return { ...stats, mrr };
+  const poolData = await calculateMonthlyPrizePool();
+
+  return { ...stats, mrr, profit: poolData.profit };
 }
 
 /**
@@ -61,19 +65,32 @@ export async function getCharityStats() {
     .from('charities')
     .select('id, name');
 
+  const { data: contributions } = await supabase
+    .from('charity_draw_contributions')
+    .select('charity_id, amount');
+
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('selected_charity_id, subscription_status, subscription_plan, is_admin');
+    .select('selected_charity_id, subscription_status, subscription_plan, charity_contribution_percentage, is_admin');
 
-  // Exclude admin records from charitable impacts to maintain financial hygiene
+  // Exclude admin records
   const activeProfiles = profiles?.filter(p => p.subscription_status === 'active' && !p.is_admin) || [];
   
   const impactMap: Record<string, number> = {};
+  
+  // 1. Add historical draw contributions
+  contributions?.forEach(c => {
+    if (c.charity_id) {
+       impactMap[c.charity_id] = (impactMap[c.charity_id] || 0) + Number(c.amount || 0);
+    }
+  });
+
+  // 2. Add current MRR subscription money (based on their chosen percentage)
   activeProfiles.forEach(p => {
     if (p.selected_charity_id) {
-       const rev = p.subscription_plan === 'monthly' ? 10 : (96 / 12);
-       // 40% of rev goes to charity
-       const contribution = rev * 0.40; 
+       const planRevenue = p.subscription_plan === 'yearly' ? 8 : 10;
+       const pct = (p.charity_contribution_percentage >= 10 ? p.charity_contribution_percentage : 10) / 100;
+       const contribution = planRevenue * pct; 
        impactMap[p.selected_charity_id] = (impactMap[p.selected_charity_id] || 0) + contribution;
     }
   });

@@ -20,7 +20,7 @@ export default function WinningsDashboardPage() {
   const [records, setRecords] = useState<WinningsRecord[]>([]);
   const [totalWinnings, setTotalWinnings] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -54,48 +54,7 @@ export default function WinningsDashboardPage() {
     fetchData();
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, recordId: string) => {
-     if (!e.target.files || e.target.files.length === 0) return;
-     const file = e.target.files[0];
-     
-     setUploadingId(recordId);
-     const supabase = createBrowserSupabaseClient();
-     const { data: { user } } = await supabase.auth.getUser();
 
-     // Securely upload physical file proof independently mitigating DB blob clutter
-     const fileExt = file.name.split('.').pop();
-     const filePath = `${user!.id}/${recordId}-${Date.now()}.${fileExt}`;
-
-     // Note: "proofs" bucket needs to be authenticated dynamically via Supabase rules in production
-     const { error: uploadError } = await supabase.storage
-        .from('proofs')
-        .upload(filePath, file);
-
-     if (!uploadError) {
-        // Retrieve valid Public URL to associate back into the result row
-        const { data: { publicUrl } } = supabase.storage.from('proofs').getPublicUrl(filePath);
-
-        // Update the draw_result row with the new proof_url
-        const { error: dbError } = await supabase
-           .from('draw_results')
-           .update({ proof_url: publicUrl })
-           .eq('id', recordId);
-
-        if (!dbError) {
-           // Optimistically update local state to show uploaded status
-           setRecords(prev => prev.map(r => r.id === recordId ? { ...r, proof_url: publicUrl } : r));
-           alert('Proof securely uploaded! An admin will verify the payload asynchronously.');
-        } else {
-           console.error('[DB_UPDATE_ERROR]', dbError);
-           alert('Physical file uploaded but DB record synchronization failed.');
-        }
-     } else {
-        console.error(uploadError);
-        alert('Upload isolated fault. Does the storage bucket exist natively?');
-     }
-     
-     setUploadingId(null);
-  };
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out max-w-6xl">
@@ -182,30 +141,9 @@ export default function WinningsDashboardPage() {
                          </td>
                          <td className="px-10 py-8 text-center">
                             {r.payment_status === 'pending' ? (
-                               <div className="relative inline-block">
-                                  <input 
-                                    type="file" 
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                    disabled={uploadingId === r.id}
-                                    accept="image/*,.pdf"
-                                    onChange={(e) => handleFileUpload(e, r.id)}
-                                  />
-                                  <button 
-                                    className="relative flex items-center justify-center gap-3 px-6 py-3 bg-white/[0.04] hover:bg-white text-neutral-400 hover:text-neutral-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all border border-white/10 disabled:opacity-50"
-                                    disabled={uploadingId === r.id}
-                                  >
-                                    {uploadingId === r.id ? (
-                                      <>
-                                        <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                        <span>Parsing</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                        <span>Upload Payload</span>
-                                      </>
-                                    )}
-                                  </button>
+                               <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                  Processing
                                </div>
                             ) : (
                                <div className="text-white/10 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">

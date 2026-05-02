@@ -9,16 +9,21 @@ export default async function AdminDashboardPage() {
     { count: totalPlayers },
     { count: activeCharities },
     { count: pendingPayouts },
-    { data: recentRevenue }
+    { data: activeSubscribers }
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('charities').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('draw_results').select('*', { count: 'exact', head: true }).eq('payment_status', 'pending'),
-    supabase.from('subscriptions_log').select('amount').gt('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+    supabase.from('profiles').select('subscription_plan').eq('subscription_status', 'active').eq('is_admin', false)
   ]);
 
-  // Calculate actual revenue from logs
-  const revenueTotal = recentRevenue?.reduce((acc, log) => acc + Number(log.amount), 0) || 0;
+  // Compute revenue directly from active subscribers' plan pricing
+  // monthly = €10/mo | yearly = €96/yr (€8/mo effective)
+  const revenueTotal = (activeSubscribers || []).reduce((acc, p) => {
+    if (p.subscription_plan === 'monthly') return acc + 10;
+    if (p.subscription_plan === 'yearly') return acc + 8;
+    return acc;
+  }, 0);
 
   const realStats = [
     { 
@@ -29,8 +34,8 @@ export default async function AdminDashboardPage() {
     },
     { 
       label: 'Monthly Revenue', 
-      value: `£${revenueTotal.toLocaleString()}`, 
-      change: 'Last 30d', 
+      value: `€${revenueTotal.toLocaleString()}`, 
+      change: 'Active subscribers', 
       icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' 
     },
     { 

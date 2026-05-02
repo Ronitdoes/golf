@@ -3,9 +3,10 @@ import { getUserById } from '@/app/actions/admin/users';
 import AdminUserDetailPage from './AdminUserDetailPage';
 import { notFound } from 'next/navigation';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   try {
-    const { profile, scores, drawResults } = await getUserById(params.id);
+    const { id } = await params;
+    const { profile, scores, drawResults } = await getUserById(id);
     
     if (!profile) return notFound();
 

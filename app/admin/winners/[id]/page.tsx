@@ -3,9 +3,10 @@ import { getWinnerResultById } from '@/app/actions/admin/winners';
 import WinnerDetailControl from './WinnerDetailControl';
 import { notFound } from 'next/navigation';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   try {
-    const result = await getWinnerResultById(params.id);
+    const { id } = await params;
+    const result = await getWinnerResultById(id);
     
     if (!result) return notFound();
 

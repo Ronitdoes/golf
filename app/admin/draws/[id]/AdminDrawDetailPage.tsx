@@ -9,22 +9,26 @@ import Link from 'next/link';
 interface Draw {
   id: string;
   month: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'simulation' | 'published';
   drawn_numbers: number[] | null;
   total_prize_pool: number | null;
   jackpot_rollover_amount: number | null;
+  logic_type: 'random' | 'algorithmic';
 }
 
 export default function AdminDrawDetailPage({ 
   draw, 
   eligibleCount,
-  rollover 
+  rollover,
+  winnerCounts
 }: { 
   draw: Draw, 
   eligibleCount: number,
-  rollover: number 
+  rollover: number,
+  winnerCounts: { match5: number; match4: number; match3: number }
 }) {
   const isPublished = draw.status === 'published';
+  const isSimulation = draw.status === 'simulation';
   const drawDate = new Date(draw.month + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
   return (
@@ -39,7 +43,7 @@ export default function AdminDrawDetailPage({
            </Link>
            <h1 className="text-5xl font-black text-white tracking-tighter">{drawDate} Draw Lifecycle</h1>
            <div className="flex items-center gap-3">
-              <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isPublished ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+              <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isPublished ? 'bg-green-500/10 text-green-500 border border-green-500/20' : isSimulation ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
                  {draw.status}
               </div>
               <span className="text-neutral-700 font-bold">•</span>
@@ -54,12 +58,12 @@ export default function AdminDrawDetailPage({
            </div>
            <div className="bg-neutral-900 border border-neutral-800 px-8 py-6 rounded-3xl text-center shadow-xl">
               <span className="text-xs text-neutral-500 font-black uppercase tracking-widest block mb-1">Vault Rollover</span>
-              <span className="text-3xl font-black text-white">${rollover.toFixed(2)}</span>
+              <span className="text-3xl font-black text-white">€{(isPublished ? Number(draw.jackpot_rollover_amount || 0) : rollover).toFixed(2)}</span>
            </div>
         </div>
       </div>
 
-      {!isPublished ? (
+      {draw.status === 'draft' ? (
         <div className="space-y-12">
            {eligibleCount < 10 && (
               <div className="p-5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-sm font-bold rounded-2xl flex items-center justify-center gap-4 animate-pulse">
@@ -69,6 +73,21 @@ export default function AdminDrawDetailPage({
            )}
            <DrawControl drawId={draw.id} />
         </div>
+
+      ) : draw.status === 'simulation' ? (
+        // Simulation run — restore saved results from DB, show preview immediately
+        <DrawControl
+          drawId={draw.id}
+          savedSimulation={draw.drawn_numbers ? {
+            drawnNumbers: draw.drawn_numbers,
+            winners: winnerCounts,
+            pool: {
+              totalPrizePool: Number(draw.total_prize_pool || 0)
+            },
+            jackpotRollover: rollover
+          } : undefined}
+          savedLogicType={draw.logic_type}
+        />
       ) : (
         <div className="space-y-16">
             <div className="p-10 bg-green-500/5 border border-green-500/10 rounded-3xl text-center shadow-sm max-w-2xl mx-auto">
@@ -87,18 +106,11 @@ export default function AdminDrawDetailPage({
                   <h3 className="text-2xl font-black text-white tracking-tight">Verified Results Output</h3>
                   <div className="h-px flex-1 bg-neutral-800" />
                </div>
-               <DrawPreview 
+                <DrawPreview 
                  drawnNumbers={draw.drawn_numbers} 
-                 winners={{
-                     match5: 0, // In production, derived from results relation
-                     match4: 0,
-                     match3: 0
-                 }}
-                 pool={{
-                     totalPrizePool: Number(draw.total_prize_pool || 0),
-                     charityTotal: 0 // In production, aggregated from log
-                 }}
-                 rollover={Number(draw.jackpot_rollover_amount || 0)}
+                 winners={winnerCounts}
+                 pool={{ totalPrizePool: Number(draw.total_prize_pool || 0) }}
+                 rollover={rollover}
                />
             </div>
         </div>

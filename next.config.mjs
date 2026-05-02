@@ -12,5 +12,14 @@ const nextConfig = {
     ];
     return config;
   },
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'fzdwcdnydxozorriveco.supabase.co',
+      },
+    ],
+  },
 };
 export default nextConfig;

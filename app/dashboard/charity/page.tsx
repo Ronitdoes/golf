@@ -24,16 +24,32 @@ export default async function CharityDashboardPage() {
     charity = data;
   }
 
-  // Calculate strict contribution sum natively
-  const { data: logs } = await supabase
-    .from('subscriptions_log')
-    .select('amount')
-    .eq('user_id', user!.id)
-    .in('event_type', ['created', 'renewed']);
-    
-  const totalSubscribed = logs?.reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
-  // Approximation of historical impact linearly
-  const historicalImpact = totalSubscribed * ((profile?.charity_contribution_percentage || 10) / 100);
+  // Calculate total amount donated to this specific charity across all draws
+  let historicalImpact = 0;
+  if (profile?.selected_charity_id) {
+    // 1. Fetch Draw Contributions
+    const { data: contributions } = await supabase
+      .from('charity_draw_contributions')
+      .select('amount')
+      .eq('charity_id', profile.selected_charity_id);
+      
+    const drawTotal = contributions?.reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+
+    // 2. Fetch Active Subscriber Contributions (Contribution Factor Money)
+    const { data: activeProfiles } = await supabase
+      .from('profiles')
+      .select('subscription_plan, charity_contribution_percentage')
+      .eq('selected_charity_id', profile.selected_charity_id)
+      .eq('subscription_status', 'active');
+
+    const subscriptionTotal = activeProfiles?.reduce((acc, p) => {
+      const planRevenue = p.subscription_plan === 'yearly' ? 8 : 10;
+      const pct = (p.charity_contribution_percentage >= 10 ? p.charity_contribution_percentage : 10) / 100;
+      return acc + (planRevenue * pct);
+    }, 0) || 0;
+
+    historicalImpact = drawTotal + subscriptionTotal;
+  }
 
   // Server action to safely persist slider inputs
   async function updatePercentage(formData: FormData) {
@@ -114,7 +130,7 @@ export default async function CharityDashboardPage() {
               <div className="text-5xl font-black text-white tracking-tighter mb-1">
                  ${historicalImpact.toFixed(2)}
               </div>
-              <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">Aggregate Approximation</p>
+              <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">Donated to {charity?.name || 'Selected Charity'}</p>
            </div>
 
            <div className="bg-white/[0.01] border border-white/5 rounded-[2rem] p-8 flex-1 flex flex-col relative overflow-hidden group">

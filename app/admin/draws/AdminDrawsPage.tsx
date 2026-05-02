@@ -24,8 +24,8 @@ export default function AdminDrawsPage({
     setError(null);
     try {
       const now = new Date();
-      // Logic defaults to random - updated during simulation/publish phase
-      const res = await createDraw(now, 'random');
+      // Pass local year/month explicitly to avoid UTC timezone shifting
+      const res = await createDraw(now.getFullYear(), now.getMonth(), 'random');
       if (res?.error) throw new Error(res.error);
       
       if (res?.draw) {
@@ -38,7 +38,8 @@ export default function AdminDrawsPage({
     }
   };
 
-  const currentMonthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const now = new Date();
+  const currentMonthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">

@@ -64,10 +64,7 @@ export default function WinnersRegistryPage({ winners }: { winners: Winner[] }) 
             <thead>
               <tr className="bg-white/[0.02] text-white/40 text-[9px] font-black uppercase tracking-[0.3em] border-b border-white/5">
                 <th className="px-10 py-8">Subscriber Identity</th>
-                <th className="px-8 py-8">Draw Period</th>
-                <th className="px-8 py-8 text-center">Protocol Match</th>
                 <th className="px-8 py-8 text-right">Prize Matrix</th>
-                <th className="px-8 py-8 text-center">Evidence Level</th>
                 <th className="px-8 py-8 text-center">Cycle Status</th>
                 <th className="px-10 py-8 text-right">Node Access</th>
               </tr>
@@ -93,26 +90,8 @@ export default function WinnersRegistryPage({ winners }: { winners: Winner[] }) 
                        <span className="text-white/20 font-black text-[9px] uppercase tracking-widest">{winner.profiles?.email || 'N/A'}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-8 font-black text-white/40 text-[10px] uppercase tracking-widest">
-                     {new Date(winner.draws?.month + 'T00:00:00Z' || Date.now()).toLocaleDateString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' })}
-                  </td>
-                  <td className="px-8 py-8 text-center">
-                    <span className="inline-flex items-center px-4 py-1.5 bg-white/[0.03] border border-white/10 rounded-xl text-[9px] font-black text-green-500 uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-                       MATCH {winner.match_count}
-                    </span>
-                  </td>
                   <td className="px-8 py-8 text-right font-black text-white text-lg tracking-tighter">
                      £{Number(winner.prize_amount).toLocaleString()}
-                  </td>
-                  <td className="px-8 py-8 text-center">
-                    {winner.proof_url ? (
-                       <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-500/10 text-green-500 border border-green-500/30 rounded-full text-[9px] font-black uppercase tracking-widest leading-none shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-                          <div className="w-1 h-1 bg-green-500 rounded-full" />
-                          Verified
-                       </span>
-                    ) : (
-                       <span className="text-[9px] font-black uppercase tracking-widest text-white/10">Pending Proof</span>
-                    )}
                   </td>
                   <td className="px-8 py-8 text-center">
                     <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${winner.payment_status === 'paid' ? 'bg-green-500/10 text-green-500 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'bg-white/[0.03] text-white/20 border-white/10'}`}>

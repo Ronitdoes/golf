@@ -2,8 +2,9 @@
 
 // Administrative user detail interface with high-fidelity control protocols using Green brand theme
 import { useState } from 'react';
-import { updateUserSubscriptionStatus, deleteUserScore } from '@/app/actions/admin/users';
+import { updateUserSubscriptionStatus, toggleUserAdminStatus, deleteUserAccount } from '@/app/actions/admin/users';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 type SubscriptionStatus = 'active' | 'inactive' | 'lapsed' | 'cancelled';
@@ -15,6 +16,7 @@ interface UserProfile {
   created_at?: string;
   subscription_status?: SubscriptionStatus;
   charities?: { name?: string } | null;
+  is_admin?: boolean;
 }
 
 interface Score {
@@ -40,7 +42,10 @@ export default function AdminUserDetailPage({
   drawResults: DrawResult[] 
 }) {
   const [status, setStatus] = useState(user.subscription_status);
+  const [isAdmin, setIsAdmin] = useState(user.is_admin || false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
 
   const handleStatusChange = async (newStatus: SubscriptionStatus) => {
     setIsUpdating(true);
@@ -49,9 +54,27 @@ export default function AdminUserDetailPage({
     setIsUpdating(false);
   };
 
-  const handleDeleteScore = async (scoreId: string) => {
-    if (!confirm('Permanently remove this score entry from the high-fidelity registry?')) return;
-    await deleteUserScore(scoreId, user.id);
+
+
+  const handleToggleAdmin = async () => {
+    setIsUpdating(true);
+    const newAdminStatus = !isAdmin;
+    const res = await toggleUserAdminStatus(user.id, newAdminStatus);
+    if (!res?.error) setIsAdmin(newAdminStatus);
+    setIsUpdating(false);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!confirm('CRITICAL WARNING: This will permanently delete this user account, all their scores, and history. This action CANNOT be undone. Proceed?')) return;
+    
+    setIsUpdating(true);
+    const res = await deleteUserAccount(user.id);
+    if (!res?.error) {
+      router.push('/admin/users');
+    } else {
+      setIsUpdating(false);
+      alert('Failed to delete user: ' + res.error);
+    }
   };
 
   return (
@@ -83,20 +106,38 @@ export default function AdminUserDetailPage({
            <div className="space-y-3 relative z-10">
               <label className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 ml-2">Protocol Alignment</label>
               <div className="relative group">
-                <select 
-                   value={status} 
-                   disabled={isUpdating}
-                   onChange={(e) => handleStatusChange(e.target.value as SubscriptionStatus)}
-                   className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-8 text-white font-black text-sm focus:outline-none focus:border-green-500 transition-all appearance-none cursor-pointer group-hover:bg-black/60 shadow-inner"
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-8 text-white font-black text-sm focus:outline-none focus:border-green-500 transition-all cursor-pointer hover:bg-black/60 shadow-inner flex items-center justify-between disabled:opacity-50"
                 >
-                   <option value="active" className="bg-neutral-900">ACTIVE STATUS</option>
-                   <option value="inactive" className="bg-neutral-900">INACTIVE / PENDING</option>
-                   <option value="lapsed" className="bg-neutral-900">LAPSED ALIGNMENT</option>
-                   <option value="cancelled" className="bg-neutral-900">TERMINATED STATUS</option>
-                </select>
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 group-hover:text-green-500 transition-colors">
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
-                </div>
+                  <span>{status === 'active' ? 'ACTIVE STATUS' : 'INACTIVE / PENDING'}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-white/20 transition-transform ${isDropdownOpen ? 'rotate-180 text-green-500' : 'group-hover:text-green-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute top-full mt-2 left-0 w-full bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <button
+                      onClick={() => {
+                        handleStatusChange('active');
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-8 py-4 text-white font-black text-sm hover:bg-green-500/10 hover:text-green-400 transition-colors border-b border-white/5"
+                    >
+                      ACTIVE STATUS
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleStatusChange('inactive');
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-8 py-4 text-white font-black text-sm hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                    >
+                      INACTIVE / PENDING
+                    </button>
+                  </div>
+                )}
               </div>
            </div>
            
@@ -110,6 +151,48 @@ export default function AdminUserDetailPage({
            </div>
         </motion.div>
       </div>
+      
+      {/* Administrative Privileges & Danger Zone */}
+      <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         className="bg-black/40 border border-rose-500/10 rounded-[2.5rem] p-8 md:p-10 shadow-2xl backdrop-blur-3xl relative overflow-hidden"
+      >
+         <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/[0.02] rounded-full blur-[80px]" />
+         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 relative z-10">
+            <div className="space-y-2">
+               <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500/60 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  Administrative Privileges
+               </h3>
+               <p className="text-white/40 text-sm max-w-xl leading-relaxed font-bold">
+                  Modify core system roles or permanently purge this entity from the global registry. These actions carry immediate operational consequences.
+               </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full md:w-auto">
+               <button
+                  onClick={handleToggleAdmin}
+                  disabled={isUpdating}
+                  className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all shadow-xl active:scale-95 ${
+                    isAdmin 
+                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20' 
+                    : 'bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20'
+                  }`}
+               >
+                  {isAdmin ? 'Revoke Admin Access' : 'Grant Admin Privileges'}
+               </button>
+               
+               <button
+                  onClick={handleDeleteUser}
+                  disabled={isUpdating}
+                  className="w-full sm:w-auto px-6 py-3 bg-rose-500 hover:bg-rose-600 text-neutral-950 font-black text-[10px] tracking-widest uppercase rounded-2xl transition-all shadow-[0_10px_20px_-10px_rgba(244,63,94,0.4)] active:scale-95"
+               >
+                  Purge User
+               </button>
+            </div>
+         </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-16">
          
@@ -143,12 +226,6 @@ export default function AdminUserDetailPage({
                           </div>
                           <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">Entry Date: {new Date(s.played_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                        </div>
-                       <button 
-                          onClick={() => handleDeleteScore(s.id)}
-                          className="p-4 text-white/10 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all border border-transparent hover:border-rose-500/20 active:scale-90"
-                       >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                       </button>
                     </motion.div>
                   ))
                )}

@@ -36,9 +36,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .single();
 
-  // Allow access in sandbox mode or if active
-  const isSandbox = process.env.CASHFREE_ENVIRONMENT === 'SANDBOX';
-  if (profile?.subscription_status !== 'active' && !isSandbox) {
+  // Strictly enforce subscription status for all environments
+  if (profile?.subscription_status !== 'active') {
     redirect('/#membership');
   }
 

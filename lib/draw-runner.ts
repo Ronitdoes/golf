@@ -9,12 +9,13 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function runDraw(drawId: string, mode: 'simulation' | 'publish', logicType: 'random' | 'algorithmic') {
+export async function runDraw(drawId: string, mode: 'simulation' | 'publish', logicType: 'random' | 'algorithmic', preDrawnNumbers: number[] | null = null) {
   // 1. Target profiles with both ID and metadata for email notifications
   const { data: profiles } = await supabaseAdmin
     .from('profiles')
     .select('id, full_name, email, subscription_status')
-    .eq('subscription_status', 'active');
+    .eq('subscription_status', 'active')
+    .eq('is_admin', false);
     
   if (!profiles || profiles.length === 0) {
       throw new Error('Globally explicit target set fundamentally empty mathematically.');
@@ -58,10 +59,13 @@ export async function runDraw(drawId: string, mode: 'simulation' | 'publish', lo
   
   const rollover = await getPreviousJackpot();
   
-  // Conditionally isolate random physical generator mapping structurally correctly tracking configurations organically 
-  const drawnNumbers = (logicType === 'algorithmic' && eligibleSubscribers.length >= 5) 
-    ? generateAlgorithmicDraw(allAlgorithmScores)
-    : generateRandomDraw();
+  // On publish: use the pre-simulated numbers so the admin publishes exactly what they reviewed.
+  // On simulation: generate fresh numbers.
+  const drawnNumbers = (mode === 'publish' && preDrawnNumbers && preDrawnNumbers.length === 5)
+    ? preDrawnNumbers
+    : (logicType === 'algorithmic' && eligibleSubscribers.length >= 5) 
+      ? generateAlgorithmicDraw(allAlgorithmScores)
+      : generateRandomDraw();
 
   const results = [];
   let match5Count = 0;
@@ -108,6 +112,11 @@ export async function runDraw(drawId: string, mode: 'simulation' | 'publish', lo
       results
   };
 
+  // Calculate outgoing rollover to save to the database for the NEXT draw to pick up
+  const outgoingRollover = match5Count === 0
+      ? Number((poolStats.totalPrizePool * 0.40).toFixed(2)) + rollover
+      : 0;
+
   // Determine implicit isolated update strategies mathematically strictly bounding
   if (mode === 'simulation') {
       await supabaseAdmin.from('draws').update({
@@ -115,7 +124,7 @@ export async function runDraw(drawId: string, mode: 'simulation' | 'publish', lo
          logic_type: logicType,
          drawn_numbers: drawnNumbers,
          total_prize_pool: poolStats.totalPrizePool,
-         jackpot_rollover_amount: rollover,
+         jackpot_rollover_amount: outgoingRollover,
       }).eq('id', drawId); 
       
   } else if (mode === 'publish') {
@@ -124,7 +133,7 @@ export async function runDraw(drawId: string, mode: 'simulation' | 'publish', lo
          logic_type: logicType,
          drawn_numbers: drawnNumbers,
          total_prize_pool: poolStats.totalPrizePool,
-         jackpot_rollover_amount: rollover,
+         jackpot_rollover_amount: outgoingRollover,
          published_at: new Date().toISOString()
       }).eq('id', drawId);
 
@@ -139,6 +148,46 @@ export async function runDraw(drawId: string, mode: 'simulation' | 'publish', lo
          }));
          await supabaseAdmin.from('draw_results').insert(dbResults);
       }
+
+      // Distribute unclaimed Match 4 and Match 3 prize pools equally across all active charities
+      const charityInserts: { draw_id: string; charity_id: string; amount: number; source: string }[] = [];
+
+      const unclaimedSources: { source: 'match4_unclaimed' | 'match3_unclaimed'; amount: number }[] = [];
+      if (match4Count === 0) {
+        const match4Amount = Number((poolStats.totalPrizePool * 0.35).toFixed(2));
+        if (match4Amount > 0) unclaimedSources.push({ source: 'match4_unclaimed', amount: match4Amount });
+      }
+      if (match3Count === 0) {
+        const match3Amount = Number((poolStats.totalPrizePool * 0.25).toFixed(2));
+        if (match3Amount > 0) unclaimedSources.push({ source: 'match3_unclaimed', amount: match3Amount });
+      }
+
+      if (unclaimedSources.length > 0) {
+        // Fetch all active charities — split equally regardless of participant support
+        const { data: activeCharities } = await supabaseAdmin
+          .from('charities')
+          .select('id')
+          .eq('is_active', true);
+
+        const charityIds = (activeCharities || []).map(c => c.id);
+        const numCharities = charityIds.length;
+
+        if (numCharities > 0) {
+          for (const { source, amount } of unclaimedSources) {
+            const equalShare = Number((amount / numCharities).toFixed(2));
+            for (const charityId of charityIds) {
+              if (equalShare > 0) {
+                charityInserts.push({ draw_id: drawId, charity_id: charityId, amount: equalShare, source });
+              }
+            }
+          }
+        }
+
+        if (charityInserts.length > 0) {
+          await supabaseAdmin.from('charity_draw_contributions').insert(charityInserts);
+        }
+      }
+
 
       // 4. TRIGGER EMAILS
       const { data: drawRecord } = await supabaseAdmin.from('draws').select('month').eq('id', drawId).single();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 
@@ -31,6 +31,8 @@ export default function SettingsPage() {
     }
     getProfile();
   }, [supabase]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +67,9 @@ export default function SettingsPage() {
       .from('avatars')
       .upload(filePath, file, { upsert: true });
 
-    if (!uploadError) {
+    if (uploadError) {
+      alert(`Upload failed: ${uploadError.message}`);
+    } else {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
       await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
       setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
@@ -86,18 +90,35 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
         <div className="space-y-6">
           <h3 className="text-xs font-black text-white/20 uppercase tracking-[0.3em]">Player Identity</h3>
-          <div className="relative group w-40 h-40">
-            <div className="w-full h-full rounded-[2.5rem] bg-neutral-900 border-2 border-dashed border-white/10 overflow-hidden flex items-center justify-center relative">
+          <div 
+            className="relative group w-40 h-40 cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="w-full h-full rounded-[2.5rem] bg-neutral-900 border-2 border-dashed border-white/10 overflow-hidden flex items-center justify-center relative transition-all group-hover:border-green-500/50">
               {profile.avatar_url ? (
                 <Image src={profile.avatar_url} alt="Avatar" fill className="object-cover" />
               ) : (
                 <span className="text-4xl font-black text-white/10">{profile.full_name?.charAt(0) || 'U'}</span>
               )}
             </div>
-            <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-[2.5rem]">
+            
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem] backdrop-blur-sm">
               <span className="text-[10px] font-black text-white uppercase tracking-widest">Change Photo</span>
-              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={updating} />
-            </label>
+            </div>
+
+            {updating && (
+               <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-[2.5rem] z-10">
+                  <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+               </div>
+            )}
+            <input 
+               ref={fileInputRef}
+               type="file" 
+               className="hidden" 
+               accept="image/*" 
+               onChange={handleAvatarUpload} 
+               disabled={updating} 
+            />
           </div>
         </div>
 

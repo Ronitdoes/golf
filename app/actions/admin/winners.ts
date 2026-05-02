@@ -39,7 +39,11 @@ export async function getWinnerResultById(id: string) {
     .from('draw_results')
     .select(`
       *,
-      profiles (full_name, email),
+      profiles (
+        full_name, 
+        email,
+        scores (score)
+      ),
       draws (month, drawn_numbers)
     `)
     .eq('id', id)
@@ -91,7 +95,7 @@ export async function rejectWinner(id: string, reason: string) {
   const { error } = await supabase
     .from('draw_results')
     .update({ 
-       proof_url: null,
+       payment_status: 'rejected',
     })
     .eq('id', id);
 

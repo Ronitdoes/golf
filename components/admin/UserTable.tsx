@@ -24,7 +24,7 @@ export default function UserTable({ users, currentUserId }: { users: UserRow[], 
     >
       <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/[0.01] rounded-full blur-[100px] pointer-events-none" />
       
-      <div className="overflow-x-auto relative z-10 custom-scrollbar">
+      <div className="relative z-10 overflow-x-clip">
         <table className="w-full text-left whitespace-nowrap text-sm">
           <thead>
             <tr className="bg-white/[0.02] text-white/40 text-[9px] font-black uppercase tracking-[0.3em] border-b border-white/5">
@@ -89,7 +89,7 @@ export default function UserTable({ users, currentUserId }: { users: UserRow[], 
                 <td className="px-8 py-6 text-right">
                    <Link 
                       href={`/admin/users/${user.id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.05] text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white rounded-xl transition-all border border-white/5 hover:border-white/10 active:scale-95 shadow-xl opacity-100 translate-x-0 lg:opacity-0 lg:group-hover:opacity-100 lg:translate-x-3 lg:group-hover:translate-x-0"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.05] text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white rounded-xl transition-all border border-white/5 hover:border-white/10 active:scale-95 shadow-xl opacity-100 translate-x-0 lg:opacity-0 lg:group-hover:opacity-100 lg:-translate-x-3 lg:group-hover:translate-x-0"
                    >
                       Inspect Node
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>

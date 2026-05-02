@@ -100,3 +100,38 @@ export async function deleteUserScore(scoreId: string, userId: string) {
   revalidatePath(`/admin/users/${userId}`);
   return { success: true };
 }
+
+/**
+ * Toggles a user's administrative privileges.
+ */
+export async function toggleUserAdminStatus(userId: string, isAdmin: boolean) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_admin: isAdmin })
+    .eq('id', userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/users/${userId}`);
+  return { success: true };
+}
+
+/**
+ * Permanently deletes a user from the system (Auth and Public Schema).
+ */
+export async function deleteUserAccount(userId: string) {
+  // Ensure the current user is an admin before performing destructive actions
+  await requireAdmin();
+  
+  // Use the admin client to bypass RLS and delete from auth.users
+  const { createAdminSupabaseClient } = await import('@/lib/supabase');
+  const adminSupabase = await createAdminSupabaseClient();
+  
+  const { error } = await adminSupabase.auth.admin.deleteUser(userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/users');
+  return { success: true };
+}

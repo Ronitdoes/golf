@@ -74,7 +74,7 @@ export async function deleteCharity(id: string) {
 
   const { error } = await supabase
     .from('charities')
-    .update({ is_active: false })
+    .delete()
     .eq('id', id);
 
   if (error) return { error: error.message };
@@ -127,7 +127,6 @@ export async function deleteCharityEvent(eventId: string, charityId: string) {
 export async function getAllCharitiesAdmin() {
   const { supabase } = await requireAdmin();
   
-  // Aggregate using manual mapping due to count-aware selectivity in profile relations
   const { data: charities } = await supabase
     .from('charities')
     .select('*')
@@ -137,17 +136,47 @@ export async function getAllCharitiesAdmin() {
 
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('selected_charity_id');
+    .select('selected_charity_id, subscription_plan, subscription_status, charity_contribution_percentage');
+
+  const { data: drawContribRows } = await supabase
+    .from('charity_draw_contributions')
+    .select('charity_id, amount, source, draw_id, draws(month)')
+    .order('created_at', { ascending: false });
 
   const countMap: Record<string, number> = {};
+  const contributionMap: Record<string, number> = {};
+  const drawContribMap: Record<string, number> = {};
+  const drawBreakdownMap: Record<string, { month: string; amount: number; source: string }[]> = {};
+
   profiles?.forEach(p => {
-    if (p.selected_charity_id) {
-       countMap[p.selected_charity_id] = (countMap[p.selected_charity_id] || 0) + 1;
+    if (!p.selected_charity_id) return;
+    countMap[p.selected_charity_id] = (countMap[p.selected_charity_id] || 0) + 1;
+    if (p.subscription_status === 'active') {
+      const planRevenue = p.subscription_plan === 'yearly' ? 8 : 10;
+      const pct = (p.charity_contribution_percentage >= 10 ? p.charity_contribution_percentage : 10) / 100;
+      contributionMap[p.selected_charity_id] = (contributionMap[p.selected_charity_id] || 0) + (planRevenue * pct);
     }
+  });
+
+  drawContribRows?.forEach(row => {
+    drawContribMap[row.charity_id] = (drawContribMap[row.charity_id] || 0) + Number(row.amount);
+    if (!drawBreakdownMap[row.charity_id]) drawBreakdownMap[row.charity_id] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const month = (row.draws as any)?.month ?? row.draw_id;
+    drawBreakdownMap[row.charity_id].push({
+      month,
+      amount: Number(row.amount),
+      source: row.source
+    });
   });
 
   return charities.map(c => ({
     ...c,
-    subscriberCount: countMap[c.id] || 0
+    subscriberCount: countMap[c.id] || 0,
+    monthlyContribution: Math.round((contributionMap[c.id] || 0) * 100) / 100,
+    drawContributions: Math.round((drawContribMap[c.id] || 0) * 100) / 100,
+    drawBreakdown: drawBreakdownMap[c.id] || []
   }));
 }
+
+

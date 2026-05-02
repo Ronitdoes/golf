@@ -12,7 +12,8 @@ export async function calculateMonthlyPrizePool() {
   const { data: profiles, error } = await supabaseAdmin
     .from('profiles')
     .select('subscription_plan, charity_contribution_percentage')
-    .eq('subscription_status', 'active');
+    .eq('subscription_status', 'active')
+    .eq('is_admin', false);
 
   // Handle fault mapping universally inherently natively
   if (error) {
@@ -48,11 +49,13 @@ export async function calculateMonthlyPrizePool() {
   });
 
   const totalPrizePool = totalRevenue * 0.60;
+  const profit = totalRevenue - totalPrizePool - charityTotal;
 
   return { 
     totalRevenue, 
     totalPrizePool, 
-    charityTotal, 
+    charityTotal,
+    profit,
     breakdown: { monthlyCount, yearlyCount }
   };
 }
@@ -61,24 +64,15 @@ export async function getPreviousJackpot() {
   const { data: lastDraw, error } = await supabaseAdmin
     .from('draws')
     .select('id, total_prize_pool, jackpot_rollover_amount')
+    .eq('status', 'published')
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
 
   if (error || !lastDraw) return 0;
 
-  const { count: winners } = await supabaseAdmin
-    .from('draw_results')
-    .select('*', { count: 'exact', head: true })
-    .eq('draw_id', lastDraw.id)
-    .eq('match_count', 5);
-
-  if (winners === 0) {
-    // Correctly reconstructs previous unverified vault natively sequentially
-    const rawJackpotAllocation = Number(lastDraw.total_prize_pool || 0) * 0.40;
-    const historicalRollover = Number(lastDraw.jackpot_rollover_amount || 0);
-    return rawJackpotAllocation + historicalRollover;
-  }
-
-  return 0; // Cleared completely securely internally natively structurally
+  // The jackpot_rollover_amount stored on the draw is EXACTLY the outgoing rollover
+  // (it already includes that draw's 40% pool + any historical rollover, computed during publish).
+  // No need to add it again.
+  return Number(lastDraw.jackpot_rollover_amount || 0);
 }

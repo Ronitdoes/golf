@@ -5,7 +5,7 @@ import { runDraw } from '@/lib/draw-runner';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { drawId, mode, logicType } = body;
+    const { drawId, mode, logicType, drawnNumbers } = body;
 
     // Authenticate via Bearer token
     const authHeader = req.headers.get('Authorization');
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'drawId is required' }, { status: 400 });
     }
 
-    const summary = await runDraw(drawId, mode || 'simulation', logicType || 'random');
+    const summary = await runDraw(drawId, mode || 'simulation', logicType || 'random', drawnNumbers ?? null);
     return NextResponse.json(summary);
 
   } catch (error: unknown) {

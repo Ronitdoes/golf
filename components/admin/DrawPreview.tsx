@@ -9,10 +9,22 @@ export default function DrawPreview({
 }: { 
   drawnNumbers: number[] | null, 
   winners: { match5: number, match4: number, match3: number },
-  pool?: { totalPrizePool: number, charityTotal: number },
+  pool?: { totalPrizePool: number },
   rollover?: number
 }) {
   if (!drawnNumbers) return null;
+
+  const pool5 = (pool?.totalPrizePool || 0) * 0.40 + (rollover || 0);
+  const pool4 = (pool?.totalPrizePool || 0) * 0.35;
+  const pool3 = (pool?.totalPrizePool || 0) * 0.25;
+
+  const payout5 = winners.match5 > 0 ? pool5 : 0;
+  const payout4 = winners.match4 > 0 ? pool4 : 0;
+  const payout3 = winners.match3 > 0 ? pool3 : 0;
+  const totalPayout = payout5 + payout4 + payout3;
+
+  // Unclaimed tiers go to charity
+  const charityFromDraw = (winners.match4 === 0 ? pool4 : 0) + (winners.match3 === 0 ? pool3 : 0);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -48,21 +60,27 @@ export default function DrawPreview({
                 <td className="py-3 font-medium">Match 5 (Jackpot)</td>
                 <td className="py-3 text-center">{winners.match5}</td>
                 <td className="py-3 text-right text-green-400 font-bold">
-                  {winners.match5 > 0 ? `$${(( (pool?.totalPrizePool || 0) * 0.40 + (rollover || 0) ) / winners.match5).toFixed(2)}` : 'Rolled Over'}
+                  {winners.match5 > 0
+                    ? `€${(pool5 / winners.match5).toFixed(2)}`
+                    : 'Rolled Over'}
                 </td>
               </tr>
               <tr className="text-white">
                 <td className="py-3 font-medium">Match 4</td>
                 <td className="py-3 text-center">{winners.match4}</td>
                 <td className="py-3 text-right">
-                  {winners.match4 > 0 ? `$${(( (pool?.totalPrizePool || 0) * 0.35 ) / winners.match4).toFixed(2)}` : '$0.00'}
+                  {winners.match4 > 0 
+                    ? <span className="text-white">€{(pool4 / winners.match4).toFixed(2)}</span>
+                    : <span className="text-rose-400 font-bold text-xs">→ Charity</span>}
                 </td>
               </tr>
               <tr className="text-white">
                 <td className="py-3 font-medium">Match 3</td>
                 <td className="py-3 text-center">{winners.match3}</td>
                 <td className="py-3 text-right">
-                  {winners.match3 > 0 ? `$${(( (pool?.totalPrizePool || 0) * 0.25 ) / winners.match3).toFixed(2)}` : '$0.00'}
+                  {winners.match3 > 0 
+                    ? <span className="text-white">€{(pool3 / winners.match3).toFixed(2)}</span>
+                    : <span className="text-rose-400 font-bold text-xs">→ Charity</span>}
                 </td>
               </tr>
             </tbody>
@@ -71,17 +89,24 @@ export default function DrawPreview({
 
         <div className="space-y-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-            <h4 className="text-sm font-medium text-neutral-500 mb-1">Total Payout Estimation</h4>
+            <h4 className="text-sm font-medium text-neutral-500 mb-1">Total Payout to Winners</h4>
             <div className="text-3xl font-black text-white">
-              ${( (winners.match5 > 0 ? (pool?.totalPrizePool || 0) * 0.40 + (rollover || 0) : 0) + (winners.match4 > 0 ? (pool?.totalPrizePool || 0) * 0.35 : 0) + (winners.match3 > 0 ? (pool?.totalPrizePool || 0) * 0.25 : 0) ).toFixed(2)}
+              €{totalPayout.toFixed(2)}
             </div>
           </div>
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-            <h4 className="text-sm font-medium text-neutral-500 mb-1">Total Charity Contribution</h4>
-            <div className="text-3xl font-black text-rose-400">
-              ${pool?.charityTotal?.toFixed(2) || '0.00'}
+
+          {charityFromDraw > 0 && (
+            <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-6">
+              <h4 className="text-sm font-medium text-neutral-500 mb-1">Unclaimed → Charity Pool</h4>
+              <div className="text-3xl font-black text-rose-400">
+                €{charityFromDraw.toFixed(2)}
+              </div>
+              <p className="text-[10px] text-neutral-600 mt-2 uppercase tracking-widest font-bold">
+                Distributed proportionally to participants&apos; charities
+              </p>
             </div>
-          </div>
+          )}
+
           {winners.match5 === 0 && (
              <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-center">
                 Jackpot Rollover Activated
