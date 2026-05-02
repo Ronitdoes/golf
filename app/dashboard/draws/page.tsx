@@ -12,12 +12,12 @@ export default async function DrawsDashboardPage() {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Next Draw simulation natively derived relative globally against current execution calendar
+  // The draw happens on the last day of the current month.
+  // Count down to midnight at the end of today's month.
   const now = new Date();
-  let nextDraw = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  if (now.getDate() === 1) nextDraw = new Date(now.getFullYear(), now.getMonth(), 1, 23, 59, 59); // If currently the 1st
-  const diffTime = Math.abs(nextDraw.getTime() - now.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const nextDraw = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); // Last day of current month
+  const diffTime = nextDraw.getTime() - now.getTime();
+  const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
   // Retrieve strictly matched participation intersections isolating privacy safely
   const { data: participations } = await supabase
