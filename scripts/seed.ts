@@ -16,7 +16,7 @@ function randomUnique5(): number[] {
 }
 
 async function seed() {
-  console.log('\n🌱 Seeding 10 test users with Stableford scores...\n');
+  console.log('\n🌱 Seeding 20 test users with Stableford scores...\n');
 
   console.log('\n🌱 Seeding 10 test charities...\n');
   
@@ -42,7 +42,7 @@ async function seed() {
 
   const results: { user: string; scores: number[] }[] = [];
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 20; i++) {
     const email = `player_${Date.now()}_${i}@digitalhero.test`;
     const name = `Player ${i}`;
 
@@ -59,7 +59,7 @@ async function seed() {
     }
 
     const userId = authData.user.id;
-    const charityId = charityIds.length > 0 ? charityIds[i % charityIds.length] : null;
+    const charityId = charityIds.length > 0 ? charityIds[(i - 1) % charityIds.length] : null;
     const plan = i % 3 === 0 ? 'yearly' : 'monthly';
 
     // 2. Upsert profile

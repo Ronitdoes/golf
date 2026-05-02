@@ -9,7 +9,7 @@ interface WinningsRecord {
   draw_id: string;
   match_count: number;
   prize_amount: number;
-  payment_status: 'pending' | 'paid';
+  payment_status: 'pending' | 'paid' | 'rejected';
   proof_url?: string | null;
   draws: {
     month: string;
@@ -128,30 +128,39 @@ export default function WinningsDashboardPage() {
                          <td className="px-10 py-8 text-right font-black text-white text-2xl tracking-tighter">
                             ${Number(r.prize_amount).toFixed(2)}
                          </td>
-                         <td className="px-10 py-8 text-center">
-                            {r.payment_status === 'paid' ? (
-                               <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500/20">
-                                  Settled
-                               </span>
-                            ) : (
-                               <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
-                                  In Review
-                               </span>
-                            )}
-                         </td>
-                         <td className="px-10 py-8 text-center">
-                            {r.payment_status === 'pending' ? (
-                               <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                  Processing
-                               </div>
-                            ) : (
-                               <div className="text-white/10 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                  Archive Validated
-                               </div>
-                            )}
-                         </td>
+                          <td className="px-10 py-8 text-center">
+                             {r.payment_status === 'paid' ? (
+                                <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500/20">
+                                   Settled
+                                </span>
+                             ) : r.payment_status === 'rejected' ? (
+                                <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                                   Rejected
+                                </span>
+                             ) : (
+                                <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                                   In Review
+                                </span>
+                             )}
+                          </td>
+                          <td className="px-10 py-8 text-center">
+                             {r.payment_status === 'pending' ? (
+                                <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                   Processing
+                                </div>
+                             ) : r.payment_status === 'rejected' ? (
+                                <div className="text-red-500/60 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                   Claim Denied
+                                </div>
+                             ) : (
+                                <div className="text-white/10 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                   Archive Validated
+                                </div>
+                             )}
+                          </td>
                        </tr>
                      );
                   })}
